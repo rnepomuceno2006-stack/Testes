@@ -1,28 +1,26 @@
 # 🐂 Boi Impact — O Jogo do Festival de Parintins
 
 Jogo de celular/tablet (PWA) inspirado no **Festival Folclórico de Parintins**, com visual
-no estilo **Genshin Impact** e mecânica dinâmica no estilo **Candy Crush**.
-Escolha seu boi — **Garantido** (♥ vermelho) ou **Caprichoso** (★ azul) — e dispute
-os **21 quesitos oficiais** ao longo de **3 noites**.
+3D **cel-shading no estilo Genshin Impact** e jogabilidade de exploração/aventura no estilo
+**Zelda: Ocarina of Time**. Escolha seu boi — **Garantido** (♥ vermelho) ou **Caprichoso**
+(★ azul) — e ajude a recuperar os objetos sagrados dos quesitos ao longo de **3 noites**.
 
 ## ✨ Recursos
 
-- **21 quesitos oficiais** divididos nos 3 blocos reais do festival:
-  - **Bloco A — Comuns e Musicais** (1ª noite)
-  - **Bloco B — Cenografia e Coreografia** (2ª noite)
-  - **Bloco C — Artísticos** (3ª noite)
-- Cada quesito é um **mini-game** diferente: mira/timing, sequência (Simon), toque rápido,
-  reação, perguntas (trivia), memória e **match-3 (Candy Crush)** nos quesitos musicais.
-- **Notas de 0 a 10** por quesito; vence quem somar mais nas 3 noites (contra a CPU rival).
-- **Toadas**: trilha sonora sintetizada (Web Audio) + refrões de cada boi durante os
-  desafios musicais. *(Veja "Toadas 2026" abaixo.)*
+- **Aventura em mundo 3D**: você é o **torcedor** do boi escolhido e explora a cidade de
+  Parintins — Bumbódromo, Cidade do Boi, Porto Amazonas, Praça da Catedral e a floresta.
+- **Missões estilo Zelda**: os itens/quesitos do boi (Pajé, Cunhã-Poranga, Levantador de
+  Toadas, Porta-Estandarte, Amo do Boi…) perderam objetos sagrados. Converse com o povo da
+  cidade, **siga as pistas**, **encontre o objeto perdido** e **devolva ao seu dono**.
+- **3 noites de festival**: recupere os quesitos de cada noite; vence o boi com mais pontos
+  (contra o boi rival, controlado pela CPU).
+- **Visual cel-shading**: `MeshToonMaterial`, contornos escuros (OutlinePass) e brilho
+  mágico (UnrealBloomPass), com partículas elementais — estética Genshin Impact em Three.js.
+- **Toadas 2026**: trilha sintetizada no clima de cada boi + refrões/temas exibidos em tela
+  nos momentos-chave. *(Veja "Toadas 2026" abaixo.)*
 - **Recompensas temáticas**: o Garantido ganha **♥ Corações** (vermelho) e o Caprichoso
-  ganha **★ Estrelas** (prateada). Cada boi tem sua própria carteira.
-- **Loja de Artefatos** (estilo Genshin): compre e equipe artefatos que dão habilidades
-  (piso de nota, eliminar opção errada, +tempo, reação mais tolerante, mira mais lenta,
-  +50% de recompensa). Progresso salvo no aparelho (localStorage).
-- **Visual e animações**: estética de floresta amazônica, partículas, combos, confete,
-  vibração de tela e efeitos — pensado para **celulares e tablets** (layout responsivo).
+  ganha **★ Estrelas** (prateada). Cada boi tem sua própria carteira (localStorage).
+- **Controles**: WASD/setas + mouse no PC; direcional virtual + botões no celular/tablet.
 
 ## 📱 Como jogar / instalar no Android (PWA)
 
@@ -40,14 +38,20 @@ ele precisa ser servido por **HTTPS** (ex.: GitHub Pages):
 
 ## 🎵 Toadas 2026
 
-As **toadas oficiais de 2026** não estão embutidas (não foi possível confirmá-las).
-O jogo usa, por ora, refrões/bordões representativos de cada boi e uma trilha sintetizada.
-Para inserir as toadas reais, edite as listas em `index.html`:
+O jogo referencia os **temas oficiais de 2026** de cada boi:
+
+- **Garantido** — *"Parintins: Portal do Encantamento"* (toadas de galera, lenda/ritual e de amo)
+- **Caprichoso** — *"Brinquedo que Canta seu Chão"* (tema homônimo, *É Hoje!*, *Povo do Norte*, *Trilha do Curupira*, itens femininos)
+
+Refrões/bordões curtos aparecem em momentos-chave (abertura, recuperação de item, virada de
+noite, vitória) e a trilha ambiente sintetizada usa a escala/clima de cada boi. As **letras
+completas não estão embutidas** (são protegidas por direitos autorais). Para colá-las, edite o
+objeto `TOADAS` em `index.html`:
 
 ```js
 const TOADAS = {
-  gar: [ "refrão 1...", "refrão 2..." ],
-  cap: [ "refrão 1...", "refrão 2..." ]
+  gar: { tema:'Parintins: Portal do Encantamento', abertura:'...', galera:'...', lenda:'...', feminino:'...', amo:'...', vitoria:'...' },
+  cap: { tema:'Brinquedo que Canta seu Chão',       abertura:'...', galera:'...', lenda:'...', feminino:'...', amo:'...', vitoria:'...' }
 };
 ```
 
