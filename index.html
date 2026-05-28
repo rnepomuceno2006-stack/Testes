@@ -136,7 +136,8 @@
 <div id="loading">
   <h1>Boi Impact<br/>Lendas de Parintins</h1>
   <div class="spinner"></div>
-  <div class="sub">Preparando a ilha Tupinambarana&hellip;</div>
+  <div class="sub" id="loadMsg">Carregando o mapa real de Parintins&hellip;</div>
+  <div class="sub" id="loadSub" style="font-size:13px;opacity:.55">Buscando dados geográficos (OpenStreetMap)</div>
 </div>
 
 <div id="intro" class="overlay hidden">
@@ -252,6 +253,8 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 /* =====================================================================
    Boi Impact — Lendas de Parintins (3D exploration adventure)
@@ -308,6 +311,174 @@ const TOADAS = {
       2023:'O Brado do Povo Guerreiro (Pajé Sou Eu)', 2024:'Cultura: O Triunfo do Povo (Nossa Coroação)',
       2025:'É Tempo de Retomada (O Couro Vai Comer)', 2026:'Brinquedo que Canta seu Chão (É Hoje! / Povo do Norte / Consagrada Cunhã)'
     }
+  }
+};
+
+/* ====================================================================
+   CONFIG — TODOS OS PARÂMETROS AJUSTÁVEIS DO MUNDO/RENDER (comentados)
+   ====================================================================
+   Mexa aqui para mudar o mapa real, o visual cel-shading e a água.
+   ==================================================================== */
+const CONFIG = {
+  /* --- Geografia de Parintins (Amazonas, Brasil) --- */
+  CENTER_LAT: -2.6288,   // latitude do centro da cidade
+  CENTER_LON: -56.7356,  // longitude do centro
+  // bounding box (sul, oeste, norte, leste) — inclui Bumbódromo e orla do rio
+  BBOX: { s:-2.648, w:-56.748, n:-2.612, e:-56.720 },
+
+  /* --- Escala do mundo ---
+     Convertemos lat/lon para metros reais e depois multiplicamos por WORLD_SCALE
+     para caber no espaço jogável já calibrado do jogo (NPCs/itens em ±78).
+     Aumente para uma cidade "maior"; diminua para tudo mais perto. (0.02–0.06) */
+  WORLD_SCALE: 0.035,
+  PLAY_BOUND: 78,        // limite de caminhada (igual ao physics original)
+
+  /* --- Overpass (busca dos dados reais no navegador do jogador) --- */
+  OVERPASS_URLS: [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter'
+  ],
+  FETCH_TIMEOUT_MS: 20000,        // 20s por tentativa antes do mirror/fallback
+  CACHE_KEY: 'parintins_osm_v1',  // localStorage: cache do resultado (offline/instantâneo)
+
+  /* --- Construção do mundo --- */
+  MAX_BUILDINGS: 1500,            // limite p/ performance (mantém os maiores)
+  BUILDING_LEVEL_HEIGHT: 3.0,     // metros por andar (tag building:levels)
+  BUILDING_MIN_H: 4, BUILDING_MAX_H: 9, // faixa de altura aleatória sem tag
+  // largura das ruas (metros reais) por tipo de via
+  ROAD_WIDTH: { primary:8, secondary:6.5, tertiary:6, residential:5, service:4, footway:2, path:2, default:4 },
+
+  /* --- Iluminação (sol quente + céu/solo frios) --- */
+  SUN_COLOR: 0xffd9a0, SUN_INTENSITY: 2.0,   // 1.5–3.0 (entardecer amazônico)
+  SUN_AZIMUTH: 0.9, SUN_ELEVATION: 0.55,     // ângulos do sol (rad); baixo = pôr-do-sol
+  HEMI_SKY: 0xbfe3ff, HEMI_GROUND: 0x4a3a26, HEMI_INTENSITY: 0.75, // luz de ambiente
+  FILL_INTENSITY: 0.30,                      // luz fria de preenchimento
+
+  /* --- Névoa / profundidade (cor = horizonte) --- */
+  FOG_COLOR: 0xf0b27a, FOG_NEAR: 60, FOG_FAR: 220,
+
+  /* --- Pós-processamento --- */
+  BLOOM_STRENGTH: 0.6, BLOOM_RADIUS: 0.6, BLOOM_THRESHOLD: 0.72, // brilho de água/luzes
+  OUTLINE_THICKNESS: 1.4,   // espessura do contorno anime
+  SATURATION: 1.12,         // realce de cor (1.0 neutro)
+
+  /* --- Cel shading --- */
+  TOON_STEPS: 4,            // degraus do gradiente (3–5)
+
+  /* --- Água do Rio Amazonas --- */
+  WATER_COLOR_A: 0x1b6fb0, WATER_COLOR_B: 0x57c6e6, // dois tons de azul
+  WATER_SPEED: 0.06,        // velocidade da animação das ondas
+  RIVER_SOUTH_Z: 70,        // distância (mundo) do plano-rio gigante ao sul
+};
+
+/* ====================================================================
+   PROJEÇÃO GEOGRÁFICA — lat/lon -> metros locais (equiretangular) -> mundo.
+   x = (lon-lon0)*cos(lat0)*111320 ; z = -(lat-lat0)*110540 ; *WORLD_SCALE
+   Centramos o mapa na origem. z negativo = norte, z positivo = sul.
+   ==================================================================== */
+const _lat0 = CONFIG.CENTER_LAT, _lon0 = CONFIG.CENTER_LON;
+const _cosLat0 = Math.cos(_lat0 * Math.PI / 180);
+function geoToWorld(lat, lon){
+  const x = (lon - _lon0) * _cosLat0 * 111320 * CONFIG.WORLD_SCALE;
+  const z = -(lat - _lat0) * 110540 * CONFIG.WORLD_SCALE;
+  return [x, z];
+}
+
+/* ====================================================================
+   OSMLoader — busca dados reais via Overpass (com mirror), cache em
+   localStorage e fallback procedural. Sempre resolve para um objeto
+   { elements:[...] } no formato "out geom" do Overpass.
+   ==================================================================== */
+const OSMLoader = {
+  query(){
+    const {s,w,n,e} = CONFIG.BBOX;
+    return `[out:json][timeout:25];
+(
+  way["building"](${s},${w},${n},${e});
+  way["highway"](${s},${w},${n},${e});
+  way["waterway"](${s},${w},${n},${e});
+  way["natural"="water"](${s},${w},${n},${e});
+  relation["natural"="water"](${s},${w},${n},${e});
+  way["leisure"="park"](${s},${w},${n},${e});
+);
+out geom;`;
+  },
+  async fetchFrom(url){
+    const ctrl = new AbortController();
+    const to = setTimeout(()=>ctrl.abort(), CONFIG.FETCH_TIMEOUT_MS);
+    try{
+      const res = await fetch(url, { method:'POST',
+        body:'data='+encodeURIComponent(this.query()),
+        headers:{'Content-Type':'application/x-www-form-urlencoded'}, signal:ctrl.signal });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const json = await res.json();
+      if(!json.elements || !json.elements.length) throw new Error('vazio');
+      return json;
+    } finally { clearTimeout(to); }
+  },
+  // resolve { data, mode } onde mode = 'osm' | 'osm-cache' | 'fallback'
+  async load(onStatus){
+    // 1) cache local?
+    try{
+      const cached = localStorage.getItem(CONFIG.CACHE_KEY);
+      if(cached){
+        const data = JSON.parse(cached);
+        if(data && data.elements && data.elements.length) return { data, mode:'osm-cache' };
+      }
+    }catch(e){}
+    // 2) tentar Overpass (com mirror)
+    for(let i=0;i<CONFIG.OVERPASS_URLS.length;i++){
+      if(onStatus) onStatus(i===0 ? 'Conectando ao OpenStreetMap…' : 'Tentando servidor alternativo…');
+      try{
+        const data = await this.fetchFrom(CONFIG.OVERPASS_URLS[i]);
+        try{ localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify(data)); }catch(e){}
+        return { data, mode:'osm' };
+      }catch(e){ /* tenta próximo / cai no fallback */ }
+    }
+    // 3) sem dados -> fallback procedural sintetizado no mesmo formato
+    return { data:this.fallbackData(), mode:'fallback' };
+  },
+  // Aproximação procedural de Parintins em formato OSM (sempre funciona offline).
+  // Geramos elementos com geometry em lat/lon ao redor do centro, p/ reusar o
+  // mesmo pipeline de construção (geoToWorld).
+  fallbackData(){
+    const els = [];
+    const {s,w,n,e} = CONFIG.BBOX;
+    const dLat = n - s, dLon = e - w;
+    // grade de ruas (highways)
+    const NX = 9, NZ = 9;
+    for(let i=1;i<NX;i++){
+      const lon = w + dLon*i/NX;
+      els.push({ type:'way', tags:{highway: i%2? 'secondary':'residential'},
+        geometry:[ {lat:s,lon}, {lat:n,lon} ] });
+    }
+    for(let j=1;j<NZ;j++){
+      const lat = s + dLat*j/NZ;
+      els.push({ type:'way', tags:{highway: j%3? 'residential':'primary'},
+        geometry:[ {lat,lon:w}, {lat,lon:e} ] });
+    }
+    // quarteirões de prédios
+    for(let i=1;i<NX;i++) for(let j=1;j<NZ;j++){
+      const cLon = w + dLon*(i-0.5)/NX, cLat = s + dLat*(j-0.5)/NZ;
+      // não colocar prédios na faixa sul (rio)
+      if(cLat < s + dLat*0.18) continue;
+      for(let k=0;k<2;k++){
+        const ox=(Math.random()-0.5)*dLon/NX*0.5, oz=(Math.random()-0.5)*dLat/NZ*0.5;
+        const bw=dLon/NX*0.28, bh=dLat/NZ*0.28;
+        const la=cLat+oz, lo=cLon+ox;
+        els.push({ type:'way', tags:{building:'yes','building:levels':String(1+(Math.random()*5|0))},
+          geometry:[ {lat:la-bh,lon:lo-bw},{lat:la-bh,lon:lo+bw},{lat:la+bh,lon:lo+bw},{lat:la+bh,lon:lo-bw} ] });
+      }
+    }
+    // rio/água ao sul
+    els.push({ type:'way', tags:{natural:'water'},
+      geometry:[ {lat:s-0.004,lon:w-0.004},{lat:s-0.004,lon:e+0.004},
+                 {lat:s+dLat*0.12,lon:e+0.004},{lat:s+dLat*0.12,lon:w-0.004} ] });
+    // um parque
+    const pLat=s+dLat*0.55, pLon=w+dLon*0.35, pr=0.0015;
+    els.push({ type:'way', tags:{leisure:'park'},
+      geometry:[ {lat:pLat-pr,lon:pLon-pr},{lat:pLat-pr,lon:pLon+pr},{lat:pLat+pr,lon:pLon+pr},{lat:pLat+pr,lon:pLon-pr} ] });
+    return { elements: els, _fallback:true };
   }
 };
 
@@ -438,10 +609,14 @@ class PhysicsEngine {
    ==================================================================== */
 class ToonFactory {
   constructor(){
-    const colors=new Uint8Array([90,160,255]); // 3 light steps
-    this.gradient=new THREE.DataTexture(colors,colors.length,1,THREE.RedFormat);
+    // gradiente em N degraus -> banding nítido estilo anime (CONFIG.TOON_STEPS)
+    const steps=Math.max(2,CONFIG.TOON_STEPS|0);
+    const colors=new Uint8Array(steps);
+    for(let i=0;i<steps;i++) colors[i]=Math.round((i/(steps-1))*255);
+    this.gradient=new THREE.DataTexture(colors,steps,1,THREE.RedFormat);
     this.gradient.needsUpdate=true;
     this.gradient.minFilter=this.gradient.magFilter=THREE.NearestFilter;
+    this.gradient.generateMipmaps=false;
     this.cache={};
   }
   mat(color,opts={}){
@@ -455,6 +630,53 @@ class ToonFactory {
     return new THREE.MeshToonMaterial({color,gradientMap:this.gradient,
       emissive:new THREE.Color(color),emissiveIntensity:intensity});
   }
+  // material toon com rim/fresnel (brilho anime nas bordas) — para personagens/marcos
+  rim(color,{rimColor=0xffe9c0,rimPower=2.5,emissive=0,emInt=0}={}){
+    const m=new THREE.MeshToonMaterial({color,gradientMap:this.gradient});
+    if(emissive){ m.emissive=new THREE.Color(emissive); m.emissiveIntensity=emInt; }
+    m.onBeforeCompile=(sh)=>{
+      sh.uniforms.rimColor={value:new THREE.Color(rimColor)};
+      sh.uniforms.rimPower={value:rimPower};
+      sh.vertexShader='varying vec3 vWN; varying vec3 vWP;\n'+sh.vertexShader
+        .replace('#include <begin_vertex>','#include <begin_vertex>\n vWN=normalize(mat3(modelMatrix)*normal); vWP=(modelMatrix*vec4(transformed,1.0)).xyz;');
+      sh.fragmentShader='uniform vec3 rimColor; uniform float rimPower; varying vec3 vWN; varying vec3 vWP;\n'+sh.fragmentShader
+        .replace('#include <dithering_fragment>',
+          'vec3 V=normalize(cameraPosition - vWP); float rim=pow(1.0-max(dot(V,normalize(vWN)),0.0),rimPower); gl_FragColor.rgb+=rimColor*rim*0.85;\n#include <dithering_fragment>');
+    };
+    return m;
+  }
+}
+
+/* ====================================================================
+   Água animada — toon de dois tons + brilho. Lista global de materiais
+   atualizada por tempo no loop principal.
+   ==================================================================== */
+const WATER_MATERIALS=[];
+function makeWaterMaterial(){
+  const m=new THREE.ShaderMaterial({
+    transparent:true,
+    uniforms:{
+      time:{value:0},
+      cA:{value:new THREE.Color(CONFIG.WATER_COLOR_A)},
+      cB:{value:new THREE.Color(CONFIG.WATER_COLOR_B)},
+      speed:{value:CONFIG.WATER_SPEED}
+    },
+    vertexShader:`varying vec3 vP; uniform float time; uniform float speed;
+      void main(){ vec3 p=position;
+        p.z += sin(p.x*0.5+time*speed*8.0)*0.10 + cos(p.y*0.6+time*speed*6.0)*0.08; // ondulação
+        vP=p; gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0); }`,
+    fragmentShader:`varying vec3 vP; uniform float time; uniform float speed; uniform vec3 cA; uniform vec3 cB;
+      void main(){
+        float w=sin(vP.x*1.2+time*speed*10.0)+cos(vP.y*1.4+time*speed*8.0);
+        float band=smoothstep(-0.3,0.3,w);                 // duas faixas (toon)
+        vec3 col=mix(cA,cB,band);
+        float spark=pow(max(sin(vP.x*7.0+time*3.0)*sin(vP.y*7.0+time*2.3),0.0),18.0); // brilho
+        col+=vec3(1.0,1.0,0.9)*spark*0.7;
+        gl_FragColor=vec4(col,0.92);
+      }`
+  });
+  WATER_MATERIALS.push(m);
+  return m;
 }
 
 /* ---- billboard label sprite ---- */
@@ -567,8 +789,9 @@ class ParticleSystem {
 class Renderer {
   constructor(container){
     this.scene=new THREE.Scene();
-    this.scene.fog=new THREE.Fog(0x1a2238,55,130);
-    this.camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,0.1,400);
+    // névoa na cor do horizonte (profundidade) — ver CONFIG.FOG_*
+    this.scene.fog=new THREE.Fog(CONFIG.FOG_COLOR,CONFIG.FOG_NEAR,CONFIG.FOG_FAR);
+    this.camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,0.1,2000);
     this.gl=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
     this.gl.setSize(innerWidth,innerHeight);
     this.gl.setPixelRatio(Math.min(devicePixelRatio,2));
