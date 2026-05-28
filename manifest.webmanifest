@@ -1,0 +1,19 @@
+{
+  "name": "Boi Impact — Festival de Parintins",
+  "short_name": "Boi Impact",
+  "description": "Jogo do Festival Folclórico de Parintins com visual estilo Genshin Impact. Garantido vs Caprichoso disputam os 21 quesitos oficiais em 3 noites.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "./index.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0a0d18",
+  "theme_color": "#0d1322",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
