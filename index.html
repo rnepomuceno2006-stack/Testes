@@ -797,17 +797,27 @@ class Renderer {
     this.gl.setPixelRatio(Math.min(devicePixelRatio,2));
     this.gl.shadowMap.enabled=true; this.gl.shadowMap.type=THREE.PCFSoftShadowMap;
     this.gl.toneMapping=THREE.ACESFilmicToneMapping;
-    this.gl.toneMappingExposure=1.18; // >1 = warmer outdoor grading
+    this.gl.toneMappingExposure=1.12; // >1 = grading externo mais quente
     container.appendChild(this.gl.domElement);
 
+    // RenderPass -> OutlinePass -> UnrealBloomPass -> Saturação -> OutputPass(ACES)
     this.composer=new EffectComposer(this.gl);
     this.composer.addPass(new RenderPass(this.scene,this.camera));
     this.outline=new OutlinePass(new THREE.Vector2(innerWidth,innerHeight),this.scene,this.camera);
-    this.outline.edgeStrength=3.0; this.outline.edgeThickness=1.0; this.outline.edgeGlow=0.0;
+    this.outline.edgeStrength=3.0; this.outline.edgeThickness=CONFIG.OUTLINE_THICKNESS; this.outline.edgeGlow=0.0;
     this.outline.visibleEdgeColor.set('#0a0d18'); this.outline.hiddenEdgeColor.set('#0a0d18');
     this.composer.addPass(this.outline);
-    this.bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),1.2,0.4,0.3);
+    this.bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),
+      CONFIG.BLOOM_STRENGTH,CONFIG.BLOOM_RADIUS,CONFIG.BLOOM_THRESHOLD);
     this.composer.addPass(this.bloom);
+    // color grading: realce de saturação (CONFIG.SATURATION)
+    this.composer.addPass(new ShaderPass({
+      uniforms:{ tDiffuse:{value:null}, sat:{value:CONFIG.SATURATION} },
+      vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+      fragmentShader:`uniform sampler2D tDiffuse; uniform float sat; varying vec2 vUv;
+        void main(){ vec4 c=texture2D(tDiffuse,vUv); float l=dot(c.rgb,vec3(0.2126,0.7152,0.0722));
+          c.rgb=mix(vec3(l),c.rgb,sat); gl_FragColor=c; }`
+    }));
     this.composer.addPass(new OutputPass());
 
     addEventListener('resize',()=>this.resize());
@@ -864,6 +874,8 @@ class Player {
       skin:teamKey==='gar'?0xcf8e5c:0xc98a58});
     const scarf=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.5,0.05), toon.mat(t.color,{emissive:t.color,emissiveIntensity:0.25}));
     scarf.position.set(0,1.2,-0.25); this.group.add(scarf);
+    // rim/fresnel anime no torso e cabeça (brilho de borda nas cores do time)
+    this.group.traverse(o=>{ if(o.isMesh && o.geometry && o.geometry.type==='BoxGeometry' && o.position.y>1){ o.material=toon.rim(t.color,{rimColor:0xffffff,rimPower:2.2}); } });
     scene.add(this.group);
     this.pos=new THREE.Vector3(0,0,12); this.vel=new THREE.Vector3();
     this.onGround=true; this.speedWalk=5.5; this.speedRun=9.5;
@@ -1040,112 +1052,268 @@ class UIManager {
    GameWorld — builds all geometry, lights, NPCs, items, platforms.
    ==================================================================== */
 class GameWorld {
-  constructor(game){
+  // osm = { elements:[...] } (real do Overpass, do cache, ou fallback procedural)
+  constructor(game, osm){
     this.game=game; this.scene=game.renderer.scene; this.toon=game.toon;
     this.npcs=[]; this.items=[];
-    this._lights(); this._sky(); this._ground();
-    this._bumbodromo(); this._cidade(-1); this._cidade(1);
-    this._porto(); this._praca(); this._floresta();
+    this.markers=[];                 // anéis brilhantes flutuantes
+    this.osmGroup=new THREE.Group(); // tudo do mapa real (será reposicionado)
+    this.scene.add(this.osmGroup);
+    // ÂNCORAS: posições no MUNDO dos marcos do festival. Mantemos as MESMAS
+    // coordenadas já calibradas do jogo (NPCs/itens) e alinhamos o mapa real
+    // a elas, deslocando o mapa para o Bumbódromo cair na origem.
+    this.anchors={
+      bumbodromo:      new THREE.Vector3(0,0,0),
+      catedral:        new THREE.Vector3(0,0,-30),
+      cidadeGarantido: new THREE.Vector3(-42,0,0),
+      cidadeCaprichoso:new THREE.Vector3(42,0,0),
+      orla:            new THREE.Vector3(0,0,60),
+    };
+    this._lights(); this._sky();
+    this._buildFromOSM(osm);
+    this._landmarks();
   }
+
+  /* ---------- iluminação cel (sol quente + céu/solo + fill frio) ---------- */
   _lights(){
-    this.scene.add(new THREE.HemisphereLight(0xfff1d0,0x33405e,0.9));
-    const sun=new THREE.DirectionalLight(0xffe8b0,1.5);
-    sun.position.set(30,50,20); sun.castShadow=true;
-    sun.shadow.mapSize.set(2048,2048); sun.shadow.camera.near=1; sun.shadow.camera.far=160;
-    const d=90; sun.shadow.camera.left=-d; sun.shadow.camera.right=d; sun.shadow.camera.top=d; sun.shadow.camera.bottom=-d;
-    sun.shadow.bias=-0.0004; this.scene.add(sun);
+    const hemi=new THREE.HemisphereLight(CONFIG.HEMI_SKY,CONFIG.HEMI_GROUND,CONFIG.HEMI_INTENSITY);
+    this.scene.add(hemi);
+    const sun=new THREE.DirectionalLight(CONFIG.SUN_COLOR,CONFIG.SUN_INTENSITY);
+    const r=120, el=CONFIG.SUN_ELEVATION, az=CONFIG.SUN_AZIMUTH;
+    sun.position.set(Math.cos(az)*Math.cos(el)*r, Math.sin(el)*r, Math.sin(az)*Math.cos(el)*r);
+    sun.castShadow=true; sun.shadow.mapSize.set(2048,2048);
+    sun.shadow.camera.near=1; sun.shadow.camera.far=400;
+    const d=CONFIG.PLAY_BOUND+20; const sc=sun.shadow.camera;
+    sc.left=-d; sc.right=d; sc.top=d; sc.bottom=-d;
+    sun.shadow.bias=-0.0004; this.scene.add(sun); this.scene.add(sun.target);
+    const fill=new THREE.DirectionalLight(0x9fc0ff,CONFIG.FILL_INTENSITY);
+    fill.position.set(-60,40,-40); this.scene.add(fill);
   }
+
+  /* ---------- céu em gradiente (domo): horizonte quente -> zênite azul ---------- */
   _sky(){
-    const geo=new THREE.SphereGeometry(300,32,16);
+    const geo=new THREE.SphereGeometry(900,32,16);
     const mat=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,
-      uniforms:{top:{value:new THREE.Color(0x2a3a6e)},bot:{value:new THREE.Color(0xf3a86b)}},
+      uniforms:{ top:{value:new THREE.Color(0x0b2347)}, horizon:{value:new THREE.Color(0xffb27a)}, bottom:{value:new THREE.Color(0xffd9b0)} },
       vertexShader:`varying vec3 vP; void main(){ vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
-      fragmentShader:`varying vec3 vP; uniform vec3 top; uniform vec3 bot;
-        void main(){ float h=clamp(vP.y*0.0033+0.5,0.0,1.0); gl_FragColor=vec4(mix(bot,top,h),1.0);} `});
+      fragmentShader:`varying vec3 vP; uniform vec3 top; uniform vec3 horizon; uniform vec3 bottom;
+        void main(){ float h=normalize(vP).y;
+          vec3 c = h>0.0 ? mix(horizon,top,pow(h,0.6)) : mix(horizon,bottom,pow(-h,0.7));
+          gl_FragColor=vec4(c,1.0);} `});
     this.scene.add(new THREE.Mesh(geo,mat));
   }
-  _ground(){
-    const g=new THREE.Mesh(new THREE.PlaneGeometry(180,180), this.toon.mat(0x4f7a3a));
-    g.rotation.x=-Math.PI/2; g.receiveShadow=true; this.scene.add(g);
-    const pathMat=this.toon.mat(0xb79a64);
-    const mkPath=(x,z,w,d)=>{ const p=new THREE.Mesh(new THREE.PlaneGeometry(w,d),pathMat);
-      p.rotation.x=-Math.PI/2; p.position.set(x,0.02,z); p.receiveShadow=true; this.scene.add(p); };
-    mkPath(0,18,7,40); mkPath(0,-18,7,40); mkPath(-20,0,40,7); mkPath(20,0,40,7);
+
+  /* ---------- geometria utilitária ---------- */
+  _polyArea(pts){ let a=0; for(let i=0;i<pts.length;i++){ const [x1,z1]=pts[i],[x2,z2]=pts[(i+1)%pts.length]; a+=x1*z2-x2*z1; } return Math.abs(a/2); }
+  _polyCentroid(pts){ let x=0,z=0; pts.forEach(p=>{x+=p[0];z+=p[1];}); return [x/pts.length,z/pts.length]; }
+  _buildingGeom(pts,height){
+    const shape=new THREE.Shape();
+    shape.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++) shape.lineTo(pts[i][0],pts[i][1]);
+    const geo=new THREE.ExtrudeGeometry(shape,{depth:height,bevelEnabled:false});
+    geo.rotateX(-Math.PI/2); // shape no XZ, altura em Y
+    return geo;
   }
-  _addBuilding(x,z,w,h,d,color,outline=true){
-    const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), this.toon.mat(color));
-    m.position.set(x,h/2,z); m.castShadow=true; m.receiveShadow=true; this.scene.add(m);
-    const roof=new THREE.Mesh(new THREE.ConeGeometry(Math.max(w,d)*0.78,h*0.5,4), this.toon.mat(0x8a3b2a));
-    roof.position.set(x,h+h*0.25,z); roof.rotation.y=Math.PI/4; roof.castShadow=true; this.scene.add(roof);
-    if(outline) this.game.renderer.outline.selectedObjects.push(m);
-    this.game.physics.addPlatform(new THREE.Vector3(x-w/2,0,z-d/2),new THREE.Vector3(x+w/2,h,z+d/2));
-    return m;
+  _flatPolyGeom(pts){ // polígono plano (água/parque/teto) no plano XZ
+    const shape=new THREE.Shape();
+    shape.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++) shape.lineTo(pts[i][0],pts[i][1]);
+    const g=new THREE.ShapeGeometry(shape); g.rotateX(-Math.PI/2); return g;
   }
-  _bumbodromo(){
-    const base=new THREE.Mesh(new THREE.CylinderGeometry(15,16,1.2,40), this.toon.mat(0x39264f));
-    base.position.set(0,0.6,0); base.receiveShadow=true; this.scene.add(base);
-    const wall=new THREE.Mesh(new THREE.TorusGeometry(14,1.6,16,48), this.toon.mat(0x6a2c8a,{emissive:0x8a2cb0,emissiveIntensity:0.35}));
-    wall.rotation.x=Math.PI/2; wall.position.set(0,2.4,0); wall.castShadow=true; this.scene.add(wall);
-    this.game.renderer.outline.selectedObjects.push(wall);
-    for(let i=0;i<6;i++){ const a=i/6*Math.PI*2;
-      const col=i%2?0x6a5cff:0xff5ccf;
-      const l=new THREE.PointLight(col,2.4,26); l.position.set(Math.cos(a)*10,5,Math.sin(a)*10); this.scene.add(l);
-      const bulb=new THREE.Mesh(new THREE.SphereGeometry(0.5,12,12), this.toon.glow(col,2)); bulb.position.copy(l.position); this.scene.add(bulb);
+  _roadGeom(line,width){ // faixa (ribbon) plana ao longo da polilinha
+    const pos=[]; const half=width/2;
+    for(let i=0;i<line.length-1;i++){
+      const [x1,z1]=line[i],[x2,z2]=line[i+1];
+      let dx=x2-x1,dz=z2-z1; const len=Math.hypot(dx,dz)||1; dx/=len; dz/=len;
+      const nx=-dz*half, nz=dx*half;
+      const ax=x1+nx,az=z1+nz, bx=x1-nx,bz=z1-nz, cx=x2+nx,cz=z2+nz, dxx=x2-nx,dzz=z2-nz;
+      pos.push(ax,0,az, bx,0,bz, cx,0,cz, bx,0,bz, dxx,0,dzz, cx,0,cz);
     }
-    const stage=new THREE.Mesh(new THREE.CylinderGeometry(4,4.5,0.6,32), this.toon.mat(0x2a1d3a));
-    stage.position.set(0,0.3,0); this.scene.add(stage);
+    if(!pos.length) return null;
+    const g=new THREE.BufferGeometry();
+    g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+    g.computeVertexNormals(); return g;
   }
-  _cidade(side){
-    const baseX=side*42, team=side<0?TEAM.gar:TEAM.cap, tint=side<0?0xc24040:0x4070c2;
-    for(let i=0;i<6;i++){
-      const x=baseX+(Math.random()-0.5)*22, z=(i-2.5)*8+(Math.random()-0.5)*5;
-      const h=4+Math.random()*4, w=4+Math.random()*2;
-      this._addBuilding(x,z,w,h,w,i%2?tint:0xd8c39a);
-      const banner=new THREE.Mesh(new THREE.PlaneGeometry(2,3), this.toon.mat(team.color,{emissive:team.color,emissiveIntensity:0.3}));
-      banner.position.set(x,h*0.6,z+w/2+0.06); this.scene.add(banner);
-      const lc=side<0?0xff6a30:0x4fa0ff;
-      const l=new THREE.PointLight(lc,2,14); l.position.set(x+w/2+0.5,h*0.5,z); this.scene.add(l);
-      const fire=new THREE.Mesh(new THREE.SphereGeometry(0.28,10,10), this.toon.glow(side<0?0xff7a30:0x6ab0ff,2)); fire.position.copy(l.position); this.scene.add(fire);
+  _makeTree(x,z){
+    const g=new THREE.Group();
+    const t=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.09,0.5,5), this.toon.mat(0x6b4423)); t.position.y=0.25; t.castShadow=true;
+    const l=new THREE.Mesh(new THREE.ConeGeometry(0.4,0.8,6), this.toon.mat(0x2f8f3a)); l.position.y=0.8; l.castShadow=true;
+    g.add(t,l); g.position.set(x,0,z); g.scale.setScalar(0.8+Math.random()*0.7);
+    return g;
+  }
+
+  /* ---------- construção do mapa real ---------- */
+  _buildFromOSM(osm){
+    const G=this.osmGroup;
+    // base de chão (terra/verde quente)
+    const ground=new THREE.Mesh(new THREE.PlaneGeometry(1200,1200), this.toon.mat(0x6e6a3e));
+    ground.rotation.x=-Math.PI/2; ground.position.y=-0.05; ground.receiveShadow=true; G.add(ground);
+
+    const buildings=[]; const roads={major:[],minor:[]}; const waters=[]; const parks=[];
+    let osmBumbo=null, osmCatedral=null;
+
+    for(const el of (osm.elements||[])){
+      if(!el.geometry) continue;
+      const pts=el.geometry.map(p=>geoToWorld(p.lat,p.lon));
+      const t=el.tags||{};
+      if(t.building){
+        if(pts.length<3) continue;
+        let h;
+        if(t['building:levels']) h=parseFloat(t['building:levels'])*CONFIG.BUILDING_LEVEL_HEIGHT*CONFIG.WORLD_SCALE*30;
+        else if(t.height) h=parseFloat(t.height)*CONFIG.WORLD_SCALE*30;
+        else h=(CONFIG.BUILDING_MIN_H+Math.random()*(CONFIG.BUILDING_MAX_H-CONFIG.BUILDING_MIN_H))*CONFIG.WORLD_SCALE*30;
+        if(!isFinite(h)||h<=0.2) h=0.5;
+        buildings.push({pts,height:h,name:t.name||''});
+        const nm=(t.name||'').toLowerCase();
+        const c=this._polyCentroid(pts);
+        if(nm.includes('bumbódromo')||nm.includes('bumbodromo')||nm.includes('amazonino')) osmBumbo=c;
+        if(nm.includes('carmo')||nm.includes('catedral')) osmCatedral=c;
+      } else if(t.highway){
+        const w=(CONFIG.ROAD_WIDTH[t.highway]||CONFIG.ROAD_WIDTH.default)*CONFIG.WORLD_SCALE;
+        const major=['primary','secondary','tertiary','trunk'].includes(t.highway);
+        roads[major?'major':'minor'].push({line:pts,width:w});
+      } else if(t.natural==='water'||t.waterway){
+        if(pts.length>=3) waters.push(pts);
+      } else if(t.leisure==='park'){
+        if(pts.length>=3) parks.push(pts);
+      }
     }
-    const sign=makeLabel(`Cidade do ${team.name}`,team.hex,1.6); sign.position.set(baseX,8,0); this.scene.add(sign);
+
+    // ALINHAMENTO: deslocar o mapa para o Bumbódromo (real ou centro) cair na origem.
+    // Usamos o centro geográfico do bbox como referência de "centro da cidade".
+    let shiftX=0, shiftZ=0;
+    if(osmBumbo){ shiftX=-osmBumbo[0]; shiftZ=-osmBumbo[1]; }
+    G.position.set(shiftX,0,shiftZ);
+    // anchor real da catedral, se encontrada
+    if(osmCatedral) this.anchors.catedral.set(osmCatedral[0]+shiftX,0,osmCatedral[1]+shiftZ);
+
+    /* PARQUES + árvores */
+    const parkMat=this.toon.mat(0x3c7d35);
+    for(const pts of parks){
+      const m=new THREE.Mesh(this._flatPolyGeom(pts),parkMat); m.position.y=0.03; m.receiveShadow=true; G.add(m);
+      const [cx,cz]=this._polyCentroid(pts); const area=this._polyArea(pts);
+      const n=Math.min(16,Math.max(2,Math.floor(area*2)));
+      for(let i=0;i<n;i++) G.add(this._makeTree(cx+(Math.random()-.5)*4,cz+(Math.random()-.5)*4));
+    }
+
+    /* ÁGUA (polígonos OSM) */
+    for(const pts of waters){
+      const mesh=new THREE.Mesh(this._flatPolyGeom(pts),makeWaterMaterial()); mesh.position.y=0.05; G.add(mesh);
+    }
+    /* RIO AMAZONAS: grande plano ao sul (orla icônica) — fora do osmGroup p/ ficar fixo */
+    const river=new THREE.Mesh(new THREE.PlaneGeometry(1200,500,40,16), makeWaterMaterial());
+    river.geometry.rotateX(-Math.PI/2);
+    river.position.set(0,0.04,CONFIG.RIVER_SOUTH_Z+250);
+    this.scene.add(river);
+
+    /* RUAS (mescladas por tipo) */
+    const asphalt=this.toon.mat(0x2b2b30), asphaltMajor=this.toon.mat(0x33333a,{emissive:0x111111,emissiveIntensity:0.1});
+    for(const key of ['minor','major']){
+      const geos=roads[key].map(r=>this._roadGeom(r.line,r.width)).filter(Boolean);
+      if(!geos.length) continue;
+      const merged=mergeGeometries(geos,false);
+      const mesh=new THREE.Mesh(merged, key==='major'?asphaltMajor:asphalt);
+      mesh.position.y=0.02; mesh.receiveShadow=true; G.add(mesh);
+      geos.forEach(g=>g.dispose());
+    }
+
+    /* PRÉDIOS (limite por área, mesclados por cor, com colisão) */
+    buildings.sort((a,b)=>this._polyArea(b.pts)-this._polyArea(a.pts));
+    const keep=buildings.slice(0,CONFIG.MAX_BUILDINGS);
+    const wallPalette=[0xe8d3b0,0xd9b98c,0xe6c79a,0xcf9f78,0xf0e0c0,0xd8c4a0];
+    const byColor=new Map(); const roofGeos=[]; const roofMat=this.toon.mat(0x7a5a3a);
+    for(const b of keep){
+      let geo; try{ geo=this._buildingGeom(b.pts,b.height); }catch(e){ continue; }
+      const col=wallPalette[(Math.random()*wallPalette.length)|0];
+      if(!byColor.has(col)) byColor.set(col,[]);
+      byColor.get(col).push(geo);
+      const roof=this._flatPolyGeom(b.pts); roof.translate(0,b.height,0); roofGeos.push(roof);
+      // colisão: AABB do footprint (em coords de mundo, somando shift)
+      let minx=1e9,maxx=-1e9,minz=1e9,maxz=-1e9;
+      b.pts.forEach(p=>{ minx=Math.min(minx,p[0]); maxx=Math.max(maxx,p[0]); minz=Math.min(minz,p[1]); maxz=Math.max(maxz,p[1]); });
+      this.game.physics.addPlatform(
+        new THREE.Vector3(minx+shiftX,0,minz+shiftZ),
+        new THREE.Vector3(maxx+shiftX,b.height,maxz+shiftZ));
+    }
+    for(const [col,geos] of byColor){
+      const merged=mergeGeometries(geos,false);
+      const m=this.toon.mat(col,{emissive:0xfff2c0,emissiveIntensity:0.04}); // janelas fracas
+      const mesh=new THREE.Mesh(merged,m); mesh.castShadow=true; mesh.receiveShadow=true; G.add(mesh);
+      geos.forEach(g=>g.dispose());
+    }
+    if(roofGeos.length){
+      const rm=new THREE.Mesh(mergeGeometries(roofGeos,false),roofMat); rm.castShadow=true; G.add(rm);
+      roofGeos.forEach(g=>g.dispose());
+    }
   }
-  _porto(){
-    const river=new THREE.Mesh(new THREE.PlaneGeometry(180,60),
-      new THREE.MeshToonMaterial({color:0x2a6aa0,gradientMap:this.toon.gradient,transparent:true,opacity:0.92}));
-    river.rotation.x=-Math.PI/2; river.position.set(0,0.05,70); this.scene.add(river); this.river=river;
-    for(let i=0;i<3;i++){ const x=(i-1)*16; const dock=this._addBuilding(x,52,5,0.6,18,0x8a6238,false); dock.position.y=0.3; }
-    for(let i=0;i<5;i++){ const c=new THREE.Mesh(new THREE.CapsuleGeometry(0.5,2.4,4,8), this.toon.mat(0x6a4422));
-      c.rotation.z=Math.PI/2; c.position.set((i-2)*9,0.4,62+Math.sin(i)*3); c.castShadow=true; this.scene.add(c); }
-    const sign=makeLabel('Porto Amazonas','#9fd0ff',1.5); sign.position.set(0,6,46); this.scene.add(sign);
+
+  /* ---------- marcos icônicos do festival nas âncoras ---------- */
+  _marker(pos,color,h){
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(1.2,0.2,8,24), new THREE.MeshBasicMaterial({color}));
+    ring.rotation.x=Math.PI/2; ring.position.set(pos.x,h,pos.z);
+    this.scene.add(ring); this.markers.push({m:ring,base:h});
   }
-  _praca(){
-    const px=0,pz=-30;
-    this._addBuilding(px,pz-3,7,6,9,0xe8dcc0);
-    this._addBuilding(px,pz-8,3,11,3,0xe0d2b0);
-    const cross=new THREE.Mesh(new THREE.BoxGeometry(0.3,1.6,0.3), this.toon.glow(0xffe6a0,1.2)); cross.position.set(px,15,pz-8); this.scene.add(cross);
-    const f=new THREE.Mesh(new THREE.CylinderGeometry(2.4,2.6,0.8,24), this.toon.mat(0xb9c4d4)); f.position.set(px,0.4,pz+6); f.castShadow=true; this.scene.add(f);
-    const water=new THREE.Mesh(new THREE.CylinderGeometry(2.0,2.0,0.2,24), this.toon.glow(0x6ab0ff,0.5)); water.position.set(px,0.7,pz+6); this.scene.add(water);
-    const sign=makeLabel('Praça da Catedral','#ffe0b0',1.4); sign.position.set(px,8,pz+10); this.scene.add(sign);
+  _landmarks(){
+    const A=this.anchors;
+    // BUMBÓDROMO — arena oval com luzes nas cores dos bois
+    (()=>{
+      const g=new THREE.Group(); g.position.copy(A.bumbodromo);
+      const ringShape=new THREE.Shape(); ringShape.absellipse(0,0,14,9,0,Math.PI*2,false,0);
+      const hole=new THREE.Path(); hole.absellipse(0,0,10,6,0,Math.PI*2,true,0); ringShape.holes.push(hole);
+      const ring=new THREE.ExtrudeGeometry(ringShape,{depth:5,bevelEnabled:false}); ring.rotateX(-Math.PI/2);
+      const arena=new THREE.Mesh(ring,this.toon.rim(0xcfd6e0)); arena.castShadow=true; arena.receiveShadow=true; g.add(arena);
+      const stand=new THREE.Mesh(new THREE.CylinderGeometry(10,14,4,48,1,true), this.toon.mat(0xb0b8c4)); stand.position.y=2; stand.castShadow=true; g.add(stand);
+      for(let i=0;i<8;i++){ const ang=i/8*Math.PI*2; const col=i%2?0xe2231a:0x1565c0;
+        const bulb=new THREE.Mesh(new THREE.SphereGeometry(0.4,10,10), new THREE.MeshBasicMaterial({color:col}));
+        bulb.position.set(Math.cos(ang)*14.5,5.5,Math.sin(ang)*9.5); g.add(bulb);
+        const pl=new THREE.PointLight(col,2.2,18); pl.position.copy(bulb.position); g.add(pl); }
+      this.scene.add(g);
+      const sign=makeLabel('Bumbódromo','#ffcf3f',1.6); sign.position.copy(A.bumbodromo); sign.position.y=8; this.scene.add(sign);
+      this._marker(A.bumbodromo,0xffcf3f,7);
+    })();
+    // CATEDRAL N. S. do Carmo
+    (()=>{
+      const g=new THREE.Group(); g.position.copy(A.catedral);
+      const nave=new THREE.Mesh(new THREE.BoxGeometry(7,6,11), this.toon.rim(0xeae0c8)); nave.position.y=3; nave.castShadow=true; g.add(nave);
+      const tower=new THREE.Mesh(new THREE.BoxGeometry(3,10,3), this.toon.rim(0xe6d9bb)); tower.position.set(0,5,-5.5); tower.castShadow=true; g.add(tower);
+      const spire=new THREE.Mesh(new THREE.ConeGeometry(2.4,4,4), this.toon.mat(0x8a5a3a)); spire.position.set(0,12,-5.5); spire.rotation.y=Math.PI/4; g.add(spire);
+      const cross=new THREE.Mesh(new THREE.BoxGeometry(0.2,1.4,0.2), this.toon.glow(0xffcf3f,0.8)); cross.position.set(0,15,-5.5); g.add(cross);
+      this.scene.add(g);
+      const sign=makeLabel('Catedral N. S. do Carmo','#ffe0b0',1.4); sign.position.copy(A.catedral); sign.position.y=9; this.scene.add(sign);
+      this._marker(A.catedral,0xffe9b0,7);
+    })();
+    // CIDADE GARANTIDO / CAPRICHOSO — galpões nas cores dos bois
+    const venue=(pos,color,label)=>{
+      const g=new THREE.Group(); g.position.copy(pos);
+      const hall=new THREE.Mesh(new THREE.BoxGeometry(12,5,9), this.toon.rim(color,{emissive:color,emInt:0.12})); hall.position.y=2.5; hall.castShadow=true; g.add(hall);
+      const roof=new THREE.Mesh(new THREE.CylinderGeometry(5.5,5.5,13,16,1,false,0,Math.PI), this.toon.mat(color)); roof.rotation.z=Math.PI/2; roof.position.y=5; g.add(roof);
+      const beacon=new THREE.PointLight(color,3,40); beacon.position.set(0,10,0); g.add(beacon);
+      this.scene.add(g);
+      const sign=makeLabel(label,'#'+new THREE.Color(color).getHexString(),1.5); sign.position.copy(pos); sign.position.y=8; this.scene.add(sign);
+      this._marker(pos,color,7);
+    };
+    venue(A.cidadeGarantido,0xe2231a,'Cidade Garantido');
+    venue(A.cidadeCaprichoso,0x1565c0,'Cidade Caprichoso');
+    // ORLA / DOCAS no sul
+    (()=>{
+      const g=new THREE.Group(); g.position.copy(A.orla);
+      for(let i=-3;i<=3;i++){
+        const dock=new THREE.Mesh(new THREE.BoxGeometry(2,0.4,12), this.toon.mat(0x8a6a44)); dock.position.set(i*5,0.3,10); dock.castShadow=true; g.add(dock);
+        const post=new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.18,1.4,6), this.toon.mat(0x5a4326)); post.position.set(i*5,0.7,16); g.add(post);
+      }
+      this.scene.add(g);
+      const sign=makeLabel('Orla do Rio','#9fd0ff',1.4); sign.position.copy(A.orla); sign.position.y=6; this.scene.add(sign);
+      this._marker(A.orla,0x57c6e6,5);
+    })();
   }
-  _floresta(){
-    const spots=[];
-    for(let i=0;i<70;i++){ const a=Math.random()*Math.PI*2, r=55+Math.random()*22;
-      const x=Math.cos(a)*r, z=Math.sin(a)*r-12;
-      if(Math.abs(x)>74||Math.abs(z)>74) continue; spots.push([x,z]); }
-    for(let i=0;i<24;i++) spots.push([(Math.random()-0.5)*30,-52-Math.random()*16]);
-    spots.forEach(([x,z])=>{
-      const h=2.5+Math.random()*2.5;
-      const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.4,h,7), this.toon.mat(0x6b4a2a)); trunk.position.set(x,h/2,z); trunk.castShadow=true; this.scene.add(trunk);
-      const fol=new THREE.Mesh(new THREE.SphereGeometry(1.4+Math.random(),10,8), this.toon.mat(0x2f7a3a)); fol.position.set(x,h+1,z); fol.castShadow=true; this.scene.add(fol);
-    });
-    const sign=makeLabel('Floresta Amazônica','#9fe0a0',1.4); sign.position.set(0,9,-58); this.scene.add(sign);
-  }
+
   addNPC(def){ const n=new NPC(this.scene,this.toon,def); this.npcs.push(n); return n; }
   addItem(def){ const it=new WorldItem(this.scene,this.toon,def); this.items.push(it); return it; }
-  update(dt){
+  update(dt,t){
     this.npcs.forEach(n=>n.update(dt));
     this.items.forEach(i=>i.update(dt));
-    if(this.river) this.river.material.opacity=0.88+Math.sin(performance.now()*0.001)*0.06;
+    for(const m of WATER_MATERIALS) m.uniforms.time.value=t;
+    for(const mk of this.markers){ mk.m.position.y=mk.base+Math.sin(t*2)*0.6; mk.m.rotation.z=t; }
   }
 }
 
@@ -1272,7 +1440,8 @@ class Game {
     this.audio.ambientScale=TOADAS[teamKey].scale;  // trilha ambiente no clima da toada do boi
     this.audio.resume(); this.audio.startAmbient();
     $('intro').classList.add('hidden');
-    this.world=new GameWorld(this);
+    // o mapa real já foi carregado no boot (this._osm); construímos o mundo com ele
+    this.world=new GameWorld(this,this._osm||OSMLoader.fallbackData());
     this.player=new Player(this.renderer.scene,this.toon,teamKey);
     this.renderer.outline.selectedObjects.push(this.player.group);
     this.buildContent();
@@ -1424,7 +1593,7 @@ class Game {
     const dt=Math.min(0.05,this.clock.getDelta());
     if(['explore','dialogue','menu'].includes(this.state)){
       this._updatePlayer(dt);
-      this.world.update(dt);
+      this.world.update(dt,this.clock.elapsedTime);
       this._updateInteractPrompt();
       const rival=this.team==='gar'?'cap':'gar';
       this.score[rival]+=dt*0.25; // CPU passive accrual during exploration
@@ -1523,11 +1692,21 @@ class Game {
 }
 
 /* ---- Boot ---- */
-window.addEventListener('load',()=>{
+window.addEventListener('load',async ()=>{
   try{
-    new Game();
+    const game=new Game();
+    // Carrega o MAPA REAL de Parintins (Overpass -> mirror -> cache -> fallback).
+    // Roda no navegador do jogador; aqui só guardamos o resultado p/ o startGame.
+    const setSub=(s)=>{ const el=$('loadSub'); if(el) el.textContent=s; };
+    const { data, mode } = await OSMLoader.load(setSub);
+    game._osm=data; game._mapMode=mode;
     $('loading').classList.add('hidden');
     $('intro').classList.remove('hidden');
+    // toast informando qual modo de mapa carregou
+    const msg = mode==='osm' ? 'Mapa real de Parintins carregado! (OpenStreetMap)'
+      : mode==='osm-cache' ? 'Mapa carregado do cache (offline).'
+      : 'Sem internet: usando mapa aproximado de Parintins.';
+    setTimeout(()=>game.ui.toast(msg), 600);
   }catch(err){
     console.error(err);
     $('loading').innerHTML='<h1 style="color:#ff8080">Erro ao carregar</h1><p style="opacity:.7">'+err.message+'</p>';
