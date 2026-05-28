@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0d1322" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Boi Impact — Lendas de Parintins (3D)</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --glass: rgba(13,19,34,0.85);
+    --gold: rgba(200,169,110,0.6);
+    --gold-solid:#c8a96e;
+    --gar:#ff3b3b;
+    --cap:#dfe7f2;
+    --txt:#eef2fb;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;overflow:hidden;background:#0a0d18;font-family:'Rajdhani',system-ui,sans-serif;color:var(--txt);user-select:none;}
+  canvas{display:block;}
+  h1,h2,h3,.cinzel{font-family:'Cinzel',serif;letter-spacing:.5px;}
+  #app{position:fixed;inset:0;}
+
+  .glass{
+    background:var(--glass);
+    border:1px solid var(--gold);
+    border-radius:16px;
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    box-shadow:0 8px 32px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.04);
+  }
+  .btn{
+    font-family:'Rajdhani';font-weight:700;font-size:16px;color:var(--txt);
+    background:linear-gradient(180deg,rgba(40,52,82,.9),rgba(20,28,48,.9));
+    border:1px solid var(--gold);border-radius:12px;padding:10px 18px;cursor:pointer;
+    transition:transform .08s, box-shadow .12s; letter-spacing:.5px;
+  }
+  .btn:hover{box-shadow:0 0 16px rgba(200,169,110,.5);transform:translateY(-1px);}
+  .btn:active{transform:translateY(1px);}
+
+  #loading{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 30%,#19223e,#080b14);z-index:60;gap:18px;}
+  #loading h1{color:var(--gold-solid);font-size:30px;text-align:center;margin:0;text-shadow:0 0 18px rgba(200,169,110,.5);}
+  #loading .sub{opacity:.7;font-size:15px;}
+  .spinner{width:46px;height:46px;border:4px solid rgba(200,169,110,.25);border-top-color:var(--gold-solid);border-radius:50%;animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:40;padding:18px;}
+  .overlay .panel{max-width:560px;width:100%;padding:26px;text-align:center;}
+  .hidden{display:none !important;}
+
+  #intro .panel h1{font-size:30px;color:var(--gold-solid);margin:0 0 4px;text-shadow:0 0 18px rgba(200,169,110,.5);}
+  #intro .panel p{opacity:.85;line-height:1.4;margin:8px 0 22px;font-size:15px;}
+  .team-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+  .team-card{flex:1;min-width:180px;padding:20px;border-radius:14px;cursor:pointer;border:2px solid transparent;
+    transition:transform .12s, box-shadow .15s;background:rgba(255,255,255,.03);}
+  .team-card .big{font-size:46px;line-height:1;}
+  .team-card.gar{border-color:rgba(255,59,59,.6);}
+  .team-card.cap{border-color:rgba(223,231,242,.55);}
+  .team-card.gar:hover{box-shadow:0 0 24px rgba(255,59,59,.55);transform:translateY(-3px);}
+  .team-card.cap:hover{box-shadow:0 0 24px rgba(223,231,242,.5);transform:translateY(-3px);}
+  .team-card h2{margin:10px 0 4px;font-size:22px;}
+  .team-card.gar h2{color:var(--gar);}
+  .team-card.cap h2{color:#bcd0ee;}
+  .team-card small{opacity:.7;}
+
+  #hud{position:fixed;inset:0;pointer-events:none;z-index:20;}
+  #hud .tl{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:8px;}
+  #hud .tr{position:absolute;top:12px;right:12px;display:flex;gap:8px;pointer-events:auto;flex-wrap:wrap;justify-content:flex-end;}
+  .pill{display:flex;align-items:center;gap:8px;padding:7px 13px;font-weight:700;font-size:15px;}
+  .pill .lab{opacity:.7;font-size:12px;text-transform:uppercase;letter-spacing:1px;}
+  #wallet .val{color:var(--gold-solid);font-size:18px;}
+  #scoreBar{display:flex;gap:8px;align-items:center;}
+  .scorebox{padding:6px 12px;font-weight:700;border-radius:10px;font-size:14px;}
+  .scorebox.gar{border:1px solid rgba(255,59,59,.6);}
+  .scorebox.cap{border:1px solid rgba(223,231,242,.55);}
+  .hudbtn{pointer-events:auto;padding:9px 14px;font-size:14px;}
+
+  #objBanner{position:fixed;top:60px;left:50%;transform:translateX(-50%);max-width:80vw;
+    padding:8px 18px;font-size:15px;font-weight:600;text-align:center;z-index:21;pointer-events:none;border-radius:0 0 14px 14px;}
+  #objBanner .lab{color:var(--gold-solid);font-size:11px;letter-spacing:2px;text-transform:uppercase;display:block;}
+
+  #talkPrompt{position:fixed;left:50%;bottom:150px;transform:translateX(-50%);padding:8px 16px;font-weight:700;
+    z-index:22;pointer-events:none;animation:bob 1.1s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-6px)}}
+  #talkPrompt .key{color:var(--gold-solid);}
+
+  #dialogue{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);width:min(680px,94vw);
+    padding:16px 18px 22px;z-index:30;pointer-events:auto;display:flex;gap:14px;}
+  #dialogue .avatar{width:64px;height:64px;border-radius:50%;flex:0 0 64px;display:flex;align-items:center;justify-content:center;
+    font-size:30px;font-weight:700;border:2px solid var(--gold);box-shadow:0 0 16px rgba(0,0,0,.5);}
+  #dialogue .body{flex:1;position:relative;}
+  #dialogue .nm{font-family:'Cinzel';color:var(--gold-solid);font-size:18px;margin-bottom:4px;}
+  #dialogue .tx{font-size:17px;line-height:1.45;min-height:52px;}
+  #dialogue .next{position:absolute;right:0;bottom:-12px;font-size:13px;opacity:.7;}
+
+  #questlog .panel{max-width:600px;text-align:left;max-height:80vh;overflow:auto;}
+  #questlog h2{color:var(--gold-solid);text-align:center;margin:0 0 14px;}
+  .qcard{padding:12px 14px;margin-bottom:10px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(200,169,110,.25);}
+  .qcard.done{opacity:.55;border-color:rgba(120,200,120,.4);}
+  .qcard .qt{font-weight:700;font-size:16px;color:var(--gold-solid);}
+  .qcard .qs{font-size:14px;margin-top:3px;opacity:.92;}
+  .qcard .qc{font-size:13px;margin-top:6px;opacity:.75;font-style:italic;border-left:3px solid var(--gold);padding-left:8px;}
+  .carry{margin:6px 0 14px;padding:8px 12px;border-radius:10px;background:rgba(200,169,110,.12);border:1px dashed var(--gold);text-align:center;font-weight:600;}
+
+  .bigtitle{font-size:28px;color:var(--gold-solid);text-shadow:0 0 20px rgba(200,169,110,.5);margin:0 0 12px;}
+  .vs{display:flex;align-items:center;justify-content:center;gap:18px;margin:18px 0;}
+  .vs .s{font-size:42px;font-weight:700;font-family:'Cinzel';}
+  .vs .s.gar{color:var(--gar);} .vs .s.cap{color:#bcd0ee;}
+  .vs .x{opacity:.6;font-size:22px;}
+
+  #touchUI{position:fixed;inset:0;z-index:25;pointer-events:none;}
+  #joy{position:absolute;left:26px;bottom:30px;width:120px;height:120px;border-radius:50%;
+    background:rgba(13,19,34,.4);border:2px solid var(--gold);pointer-events:auto;touch-action:none;}
+  #joyNub{position:absolute;left:35px;top:35px;width:50px;height:50px;border-radius:50%;
+    background:rgba(200,169,110,.5);border:2px solid #fff;}
+  #touchBtns{position:absolute;right:22px;bottom:30px;display:flex;flex-direction:column;gap:12px;align-items:flex-end;pointer-events:none;}
+  .tbtn{pointer-events:auto;width:74px;height:74px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:13px;text-align:center;line-height:1.1;touch-action:none;color:var(--txt);}
+  .tbtn.big{width:88px;height:88px;font-size:15px;}
+  #toast{position:fixed;top:96px;left:50%;transform:translateX(-50%);z-index:35;padding:10px 18px;font-weight:600;
+    opacity:0;transition:opacity .3s;pointer-events:none;max-width:90vw;text-align:center;}
+  #toast.show{opacity:1;}
+  .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div id="loading">
+  <h1>Boi Impact<br/>Lendas de Parintins</h1>
+  <div class="spinner"></div>
+  <div class="sub">Preparando a ilha Tupinambarana&hellip;</div>
+</div>
+
+<div id="intro" class="overlay hidden">
+  <div class="panel glass">
+    <h1>Festival Folclórico de Parintins</h1>
+    <p>Os bois perderam objetos sagrados de seus quesitos às vésperas do festival!<br/>
+       Escolha o seu boi de coração e ajude a recuperar tudo a tempo de vencer as três noites na arena do Bumbódromo.</p>
+    <div class="team-row">
+      <div class="team-card gar" data-team="gar">
+        <div class="big">&#10084;&#65039;</div>
+        <h2>Boi Garantido</h2>
+        <small>O Boi do Povão — coração vermelho da Baixa de São José.</small>
+        <small style="display:block;margin-top:6px;color:var(--gold-solid)">🎶 Tema 2026: "Portal do Encantamento"</small>
+      </div>
+      <div class="team-card cap" data-team="cap">
+        <div class="big">&#11088;</div>
+        <h2>Boi Caprichoso</h2>
+        <small>O Boi de Parintins — a estrela azul da Francesa.</small>
+        <small style="display:block;margin-top:6px;color:var(--gold-solid)">🎶 Tema 2026: "Brinquedo que Canta seu Chão"</small>
+      </div>
+    </div>
+    <p style="margin-top:18px;font-size:13px;opacity:.6">WASD/setas para andar, mouse para girar a câmera, E/Enter para falar e pegar, J para o diário, Esc para pausar. No celular use o direcional e os botões.</p>
+  </div>
+</div>
+
+<div id="hud" class="hidden">
+  <div class="tl">
+    <div class="pill glass"><span class="lab">Noite</span> <span id="nightVal">1</span> / 3</div>
+    <div id="wallet" class="pill glass"><span class="lab" id="walletLab">Corações</span> <span class="val" id="walletVal">0</span></div>
+  </div>
+  <div class="tr">
+    <div id="scoreBar">
+      <div class="scorebox gar" id="sbGar">GAR 0</div>
+      <div class="scorebox cap" id="sbCap">CAP 0</div>
+    </div>
+    <button class="btn hudbtn" id="btnLog">Diário (J)</button>
+    <button class="btn hudbtn" id="btnPause">&#9208;</button>
+  </div>
+</div>
+<div id="objBanner" class="glass hidden"><span class="lab">Objetivo Atual</span><span id="objText">&mdash;</span></div>
+<div id="talkPrompt" class="glass hidden"><span class="key">[E]</span> <span id="talkLabel">Falar</span></div>
+<div id="toast" class="glass"></div>
+
+<div id="dialogue" class="glass hidden">
+  <div class="avatar" id="dlgAvatar">?</div>
+  <div class="body">
+    <div class="nm" id="dlgName">Nome</div>
+    <div class="tx" id="dlgText">&hellip;</div>
+    <div class="next">&#9660; tocar para continuar</div>
+  </div>
+</div>
+
+<div id="questlog" class="overlay hidden">
+  <div class="panel glass">
+    <h2>Diário de Missões</h2>
+    <div id="carryBox"></div>
+    <div id="qlist"></div>
+    <div class="row"><button class="btn" id="qlClose">Fechar</button></div>
+  </div>
+</div>
+
+<div id="pause" class="overlay hidden">
+  <div class="panel glass">
+    <h2 class="bigtitle">Pausa</h2>
+    <p style="opacity:.8">O festival espera por você.</p>
+    <div class="row">
+      <button class="btn" id="resumeBtn">Continuar</button>
+      <button class="btn" id="pauseLogBtn">Diário</button>
+    </div>
+  </div>
+</div>
+
+<div id="nightEnd" class="overlay hidden">
+  <div class="panel glass">
+    <h2 class="bigtitle" id="neTitle">Fim da Noite</h2>
+    <p id="neText" style="opacity:.85"></p>
+    <div class="vs"><span class="s gar" id="neGar">0</span><span class="x">&times;</span><span class="s cap" id="neCap">0</span></div>
+    <div class="row"><button class="btn" id="neNext">Próxima Noite</button></div>
+  </div>
+</div>
+
+<div id="final" class="overlay hidden">
+  <div class="panel glass">
+    <h2 class="bigtitle" id="fTitle">Campeão!</h2>
+    <p id="fText" style="opacity:.9;font-size:17px"></p>
+    <div class="vs"><span class="s gar" id="fGar">0</span><span class="x">&times;</span><span class="s cap" id="fCap">0</span></div>
+    <div class="row"><button class="btn" id="fRestart">Jogar de Novo</button></div>
+  </div>
+</div>
+
+<div id="touchUI" class="hidden">
+  <div id="joy"><div id="joyNub"></div></div>
+  <div id="touchBtns">
+    <button class="tbtn big glass" id="tInteract">Falar /<br/>Pegar</button>
+    <button class="tbtn glass" id="tJump">Pular</button>
+    <button class="tbtn glass" id="tLog">Diário</button>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+/* =====================================================================
+   Boi Impact — Lendas de Parintins (3D exploration adventure)
+   Zelda/Genshin-style fetch-quest game set in Parintins-AM.
+   Single-file PWA, Three.js r160. Classes documented below.
+   ===================================================================== */
+
+const $ = (id) => document.getElementById(id);
+const TEAM = {
+  gar:{ name:'Garantido', color:0xff3b3b, hex:'#ff3b3b', icon:'❤️', token:'Corações', tokSym:'♥', wallet:'boi_wallet_gar' },
+  cap:{ name:'Caprichoso', color:0x5aa0ff, hex:'#dfe7f2', icon:'⭐', token:'Estrelas', tokSym:'★', wallet:'boi_wallet_cap' }
+};
+
+/* ====================================================================
+   TOADAS 2026 — temas oficiais e refrões representativos de cada boi.
+   Garantido: "Parintins: Portal do Encantamento" (álbum 2026)
+   Caprichoso: "Brinquedo que Canta seu Chão" (álbum 2026)
+   Observação: usamos TÍTULOS e bordões curtos (não as letras completas,
+   que são protegidas por direitos autorais). Para colar as letras
+   oficiais, edite os campos `refrao` abaixo.
+   ==================================================================== */
+const TOADAS = {
+  gar: {
+    tema: 'Parintins: Portal do Encantamento',
+    // tonalidade da trilha ambiente (escala dó maior — clima de galera vermelha)
+    scale: [261.63,293.66,329.63,392.0,440.0,523.25],
+    abertura: '🎶 "Portal do Encantamento" — abre-se o portal da galera vermelha de Parintins!',
+    galera:  '🔴 Garantidada! A pororoca encarnada toma conta da arena! Ê, boi vermelho!',
+    lenda:   '🪶 "Templo do Sol" — tuxauas e pajés evoluem no chão sagrado do Bumbódromo.',
+    feminino:'❤️ "Aiyra Ibi Cunhã" — a beleza e o encanto vermelho iluminam a arena.',
+    amo:     '🎤 Toada de Amo, no estilo perreché de rua: o apresentador duela em versos!',
+    vitoria: '🏆 "Portal do Encantamento" — o Garantido encanta e é campeão! Garantidada!',
+    // antologia recente (títulos por ano) — usada como sabor em diálogos/flavor
+    antologia: {
+      2019:'Nós, O Povo! (Povo do Garrote)', 2020:'Somos o Povo da Floresta',
+      2021:'Eu Amo Parintins', 2022:'Amazônia do Povo Vermelho (Nasci pra Ser Vermelho)',
+      2023:'Garantido Por Toda a Vida (Treme Terra)', 2024:'Segredos do Coração (Perreché da Puraca)',
+      2025:'Boi do Povo, Boi do Povão', 2026:'Parintins: Portal do Encantamento (Garantidada / Templo do Sol / Aiyra Ibi Cunhã)'
+    }
+  },
+  cap: {
+    tema: 'Brinquedo que Canta seu Chão',
+    // escala lá menor relativa — clima azul, contagiante
+    scale: [220.0,261.63,293.66,329.63,392.0,440.0],
+    abertura: '🎶 "Brinquedo que Canta seu Chão" — o azul canta as raízes do boi de rua!',
+    galera:  '🔵 É HOJE! A torcida azulada explode na arquibancada! Ê, boi azul!',
+    lenda:   '🌿 "Toque do Trovão" — as lendas e o ritual tribal ecoam no Bumbódromo.',
+    feminino:'⭐ "Consagrada Cunhã" — a mística e o brilho do item feminino encantam os jurados.',
+    amo:     '🎤 "Povo do Norte" — força e resistência dos brincantes do Caprichoso.',
+    vitoria: '🏆 "Brinquedo que Canta seu Chão" — o Caprichoso brilha e é campeão!',
+    antologia: {
+      2019:'Um Canto de Esperança para Mátria Brasilis', 2020:'Terra: Nosso Corpo, Nosso Espírito',
+      2021:'Dança do Norte', 2022:'Amazônia, Nossa Luta em Poesia (Réquiem / Mura)',
+      2023:'O Brado do Povo Guerreiro (Pajé Sou Eu)', 2024:'Cultura: O Triunfo do Povo (Nossa Coroação)',
+      2025:'É Tempo de Retomada (O Couro Vai Comer)', 2026:'Brinquedo que Canta seu Chão (É Hoje! / Povo do Norte / Consagrada Cunhã)'
+    }
+  }
+};
+
+/* ====================================================================
+   AudioEngine — Web Audio API, fully synthesized (no asset files).
+   ==================================================================== */
+class AudioEngine {
+  constructor(){ this.ctx=null; this.master=null; this.ambientOn=false; this.ambientTimer=null; this.ambientScale=null; }
+  ensure(){
+    if(this.ctx) return;
+    this.ctx = new (window.AudioContext||window.webkitAudioContext)();
+    this.master = this.ctx.createGain();
+    this.master.gain.value = 0.3;   // overall volume (0..1)
+    this.master.connect(this.ctx.destination);
+  }
+  resume(){ this.ensure(); if(this.ctx.state==='suspended') this.ctx.resume(); }
+  tone(freq, dur=0.18, type='sine', vol=0.5, when=0){
+    if(!this.ctx) return;
+    const t=this.ctx.currentTime+when;
+    const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+    o.type=type; o.frequency.value=freq;
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(vol,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0008,t+dur);
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t+dur+0.05);
+  }
+  blip(){ this.tone(620,0.08,'square',0.18); }
+  pickup(){ [660,880,1180].forEach((f,i)=>this.tone(f,0.22,'triangle',0.4,i*0.06)); }
+  fanfare(){ [392,523,659,784].forEach((f,i)=>this.tone(f,0.4,'sawtooth',0.3,i*0.12)); this.tone(1046,0.7,'triangle',0.3,0.5); }
+  win(){ [523,659,784,1046,1318].forEach((f,i)=>this.tone(f,0.5,'triangle',0.36,i*0.14)); }
+  // scaleOverride: escala da toada do boi escolhido (ver TOADAS[team].scale).
+  // Troque por outra escala para mudar o "clima" da trilha ambiente.
+  startAmbient(scaleOverride){
+    this.ensure(); if(this.ambientOn) return; this.ambientOn=true;
+    const scale=scaleOverride||this.ambientScale||[261.63,293.66,329.63,392.0,440.0,523.25]; let step=0;
+    const tick=()=>{
+      if(!this.ambientOn) return;
+      const n=scale[Math.floor(Math.random()*scale.length)];
+      this.tone(n,0.9,'sine',0.10);
+      if(step%4===0) this.tone(n/2,1.4,'sine',0.08);
+      this.tone(90,0.14,'sine',0.10);
+      step++; this.ambientTimer=setTimeout(tick,520);
+    }; tick();
+  }
+  stopAmbient(){ this.ambientOn=false; if(this.ambientTimer) clearTimeout(this.ambientTimer); }
+}
+
+/* ====================================================================
+   InputManager — keyboard + mouse + touch.
+   ==================================================================== */
+class InputManager {
+  constructor(domElement){
+    this.keys={}; this.move=new THREE.Vector2(); this.lookDelta=new THREE.Vector2();
+    this.zoomDelta=0; this.interactQueued=false; this.jumpQueued=false;
+    this.isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+    this._dragging=false; this._lastX=0; this._lastY=0; this._touchMove=false; this._touchRun=false;
+    this.dom=domElement; this._bindKeyboard(); this._bindMouse();
+  }
+  _bindKeyboard(){
+    window.addEventListener('keydown', e=>{
+      const k=e.key.toLowerCase(); this.keys[k]=true;
+      if(k==='e'||k==='enter') this.interactQueued=true;
+      if(k===' '){ this.jumpQueued=true; }
+      if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault();
+      if(window.__game) window.__game.onKey(k);
+    });
+    window.addEventListener('keyup', e=>{ this.keys[e.key.toLowerCase()]=false; });
+  }
+  _bindMouse(){
+    const el=this.dom;
+    el.addEventListener('mousedown', e=>{ this._dragging=true; this._lastX=e.clientX; this._lastY=e.clientY; });
+    window.addEventListener('mouseup', ()=>{ this._dragging=false; });
+    window.addEventListener('mousemove', e=>{
+      if(!this._dragging) return;
+      this.lookDelta.x+=(e.clientX-this._lastX); this.lookDelta.y+=(e.clientY-this._lastY);
+      this._lastX=e.clientX; this._lastY=e.clientY;
+    });
+    el.addEventListener('wheel', e=>{ this.zoomDelta+=e.deltaY*0.01; e.preventDefault(); }, {passive:false});
+  }
+  addLook(dx,dy){ this.lookDelta.x+=dx; this.lookDelta.y+=dy; }
+  pollKeyboardMove(){
+    if(this._touchMove) return; // touch joystick has priority while active
+    let x=0,y=0;
+    if(this.keys['w']||this.keys['arrowup']) y+=1;
+    if(this.keys['s']||this.keys['arrowdown']) y-=1;
+    if(this.keys['a']||this.keys['arrowleft']) x-=1;
+    if(this.keys['d']||this.keys['arrowright']) x+=1;
+    if(x||y){ const v=new THREE.Vector2(x,y).normalize(); this.move.set(v.x,v.y); }
+    else this.move.set(0,0);
+  }
+  setTouchMove(x,y){ this._touchMove=!!(x||y); this.move.set(x,y); }
+  get running(){ return !!this.keys['shift']||this._touchRun; }
+  consumeInteract(){ const v=this.interactQueued; this.interactQueued=false; return v; }
+  consumeJump(){ const v=this.jumpQueued; this.jumpQueued=false; return v; }
+}
+
+/* ====================================================================
+   PhysicsEngine — minimal platformer physics for the player.
+   GRAVITY    = -18  (m/s^2; more negative = falls faster)
+   JUMP_FORCE = 8    (initial upward velocity; higher = jumps higher)
+   FRICTION   = 0.85 (horizontal damping per frame when no input)
+   ==================================================================== */
+class PhysicsEngine {
+  constructor(){ this.GRAVITY=-18; this.JUMP_FORCE=8; this.FRICTION=0.85; this.platforms=[]; }
+  addPlatform(min,max){ this.platforms.push({min,max}); }
+  groundHeight(x,z,currentY){
+    let h=0;
+    for(const p of this.platforms){
+      if(x>=p.min.x&&x<=p.max.x&&z>=p.min.z&&z<=p.max.z){
+        if(currentY>=p.max.y-0.6 && p.max.y>h) h=p.max.y;
+      }
+    }
+    return h;
+  }
+  step(p,dt){
+    p.vel.y += this.GRAVITY*dt;
+    p.pos.addScaledVector(p.vel,dt);
+    const gh=this.groundHeight(p.pos.x,p.pos.z,p.pos.y);
+    if(p.pos.y<=gh){ p.pos.y=gh; p.vel.y=0; p.onGround=true; } else p.onGround=false;
+    const B=78;
+    p.pos.x=Math.max(-B,Math.min(B,p.pos.x));
+    p.pos.z=Math.max(-B,Math.min(B,p.pos.z));
+  }
+}
+
+/* ====================================================================
+   ToonFactory — shared MeshToonMaterials with a 3-step cel gradient.
+   ==================================================================== */
+class ToonFactory {
+  constructor(){
+    const colors=new Uint8Array([90,160,255]); // 3 light steps
+    this.gradient=new THREE.DataTexture(colors,colors.length,1,THREE.RedFormat);
+    this.gradient.needsUpdate=true;
+    this.gradient.minFilter=this.gradient.magFilter=THREE.NearestFilter;
+    this.cache={};
+  }
+  mat(color,opts={}){
+    const key=color+'|'+(opts.emissive||0)+'|'+(opts.emissiveIntensity||0);
+    if(this.cache[key]) return this.cache[key];
+    const m=new THREE.MeshToonMaterial({color,gradientMap:this.gradient});
+    if(opts.emissive){ m.emissive=new THREE.Color(opts.emissive); m.emissiveIntensity=opts.emissiveIntensity||1; }
+    this.cache[key]=m; return m;
+  }
+  glow(color,intensity=1.4){
+    return new THREE.MeshToonMaterial({color,gradientMap:this.gradient,
+      emissive:new THREE.Color(color),emissiveIntensity:intensity});
+  }
+}
+
+/* ---- billboard label sprite ---- */
+function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function makeLabel(text,color='#ffffff',scale=1){
+  const cv=document.createElement('canvas'); const ctx=cv.getContext('2d');
+  const fs=48; ctx.font=`700 ${fs}px Rajdhani, sans-serif`;
+  const w=ctx.measureText(text).width;
+  cv.width=w+40; cv.height=fs+28;
+  ctx.font=`700 ${fs}px Rajdhani, sans-serif`;
+  ctx.fillStyle='rgba(13,19,34,0.78)'; roundRect(ctx,0,0,cv.width,cv.height,16); ctx.fill();
+  ctx.strokeStyle='rgba(200,169,110,0.7)'; ctx.lineWidth=3; roundRect(ctx,2,2,cv.width-4,cv.height-4,14); ctx.stroke();
+  ctx.fillStyle=color; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(text,cv.width/2,cv.height/2+2);
+  const tex=new THREE.CanvasTexture(cv); tex.anisotropy=4;
+  const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false,transparent:true}));
+  spr.scale.set(cv.width/120*scale,cv.height/120*scale,1); spr.renderOrder=999;
+  return spr;
+}
+
+/* ---- toon humanoid (torso + head + limbs) ---- */
+function buildHumanoid(toon,opts){
+  const g=new THREE.Group();
+  const skin=opts.skin||0xc9885a, shirt=opts.shirt||0x3366cc, pants=opts.pants||0x222a44;
+  const torso=new THREE.Mesh(new THREE.BoxGeometry(0.7,0.85,0.38), toon.mat(shirt));
+  torso.position.y=1.15; g.add(torso);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.34,18,16), toon.mat(skin));
+  head.position.y=1.85; g.add(head);
+  const hat=new THREE.Mesh(new THREE.SphereGeometry(0.36,16,12,0,Math.PI*2,0,Math.PI*0.55), toon.mat(opts.hair||0x2a1c12));
+  hat.position.y=1.95; g.add(hat);
+  const armGeo=new THREE.CylinderGeometry(0.11,0.1,0.7,8);
+  const legGeo=new THREE.CylinderGeometry(0.13,0.12,0.78,8);
+  const mkArm=(s)=>{ const a=new THREE.Group(); const m=new THREE.Mesh(armGeo,toon.mat(shirt));
+    m.position.y=-0.32; a.add(m); a.position.set(s*0.46,1.5,0); g.add(a); return a; };
+  const mkLeg=(s)=>{ const l=new THREE.Group(); const m=new THREE.Mesh(legGeo,toon.mat(pants));
+    m.position.y=-0.36; l.add(m); l.position.set(s*0.2,0.72,0); g.add(l); return l; };
+  g.userData.armL=mkArm(-1); g.userData.armR=mkArm(1);
+  g.userData.legL=mkLeg(-1); g.userData.legR=mkLeg(1);
+  g.traverse(o=>{ if(o.isMesh) o.castShadow=true; });
+  return g;
+}
+function animateWalk(g,t,intensity){
+  if(!g.userData.legL) return;
+  const s=Math.sin(t*9)*intensity;
+  g.userData.legL.rotation.x=s; g.userData.legR.rotation.x=-s;
+  g.userData.armL.rotation.x=-s; g.userData.armR.rotation.x=s;
+}
+
+/* ====================================================================
+   ParticleSystem — pooled additive point sprites.
+   configs: pickup (gold sparkle), return (team-color burst),
+            dust (walk), confetti (win)
+   ==================================================================== */
+class ParticleSystem {
+  constructor(scene){
+    this.MAX=700;
+    this.pos=new Float32Array(this.MAX*3);
+    this.col=new Float32Array(this.MAX*3);
+    this.vel=[]; this.life=new Float32Array(this.MAX);
+    for(let i=0;i<this.MAX;i++){ this.vel.push(new THREE.Vector3()); this.pos[i*3+1]=-999; }
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.BufferAttribute(this.pos,3));
+    geo.setAttribute('color',new THREE.BufferAttribute(this.col,3));
+    const mat=new THREE.PointsMaterial({size:0.32,vertexColors:true,transparent:true,
+      opacity:0.95,depthWrite:false,blending:THREE.AdditiveBlending});
+    this.points=new THREE.Points(geo,mat); this.points.frustumCulled=false;
+    scene.add(this.points); this.cursor=0;
+  }
+  _spawn(x,y,z,vx,vy,vz,r,g,b,life){
+    const i=this.cursor; this.cursor=(this.cursor+1)%this.MAX;
+    this.pos[i*3]=x; this.pos[i*3+1]=y; this.pos[i*3+2]=z;
+    this.col[i*3]=r; this.col[i*3+1]=g; this.col[i*3+2]=b;
+    this.vel[i].set(vx,vy,vz); this.life[i]=life;
+  }
+  burst(pos,type,color){
+    const c=new THREE.Color(color||0xffffff);
+    if(type==='pickup'){
+      for(let k=0;k<26;k++){ const a=Math.random()*Math.PI*2,r=Math.random()*0.4;
+        this._spawn(pos.x,pos.y,pos.z,Math.cos(a)*r,1.5+Math.random()*1.5,Math.sin(a)*r,1,0.84,0.4,0.9); }
+    } else if(type==='return'){
+      for(let k=0;k<48;k++){ const a=Math.random()*Math.PI*2,e=Math.random()*Math.PI,sp=2+Math.random()*2.5;
+        this._spawn(pos.x,pos.y,pos.z,Math.sin(e)*Math.cos(a)*sp,Math.cos(e)*sp*0.8+1,Math.sin(e)*Math.sin(a)*sp,c.r,c.g,c.b,1.3); }
+    } else if(type==='dust'){
+      const a=Math.random()*Math.PI*2;
+      this._spawn(pos.x,pos.y+0.05,pos.z,Math.cos(a)*0.3,0.4,Math.sin(a)*0.3,0.7,0.62,0.5,0.45);
+    } else if(type==='confetti'){
+      for(let k=0;k<70;k++){ const cc=Math.random()<0.5?new THREE.Color(0xff3b3b):new THREE.Color(0x5aa0ff);
+        this._spawn(pos.x+(Math.random()-0.5)*10,pos.y+6,pos.z+(Math.random()-0.5)*10,
+          (Math.random()-0.5)*1.5,-1.5-Math.random()*2,(Math.random()-0.5)*1.5,cc.r,cc.g,cc.b,2.2); }
+    }
+  }
+  update(dt){
+    for(let i=0;i<this.MAX;i++){
+      if(this.life[i]<=0) continue;
+      this.life[i]-=dt; this.vel[i].y-=4*dt;
+      this.pos[i*3]+=this.vel[i].x*dt; this.pos[i*3+1]+=this.vel[i].y*dt; this.pos[i*3+2]+=this.vel[i].z*dt;
+      if(this.life[i]<=0) this.pos[i*3+1]=-999;
+    }
+    this.points.geometry.attributes.position.needsUpdate=true;
+    this.points.geometry.attributes.color.needsUpdate=true;
+  }
+}
+
+/* ====================================================================
+   Renderer — Three.js scene + EffectComposer post stack.
+   Bloom: strength 1.2 / radius 0.4 / threshold 0.3
+   OutlinePass: thin dark cel edges on selected objects.
+   ==================================================================== */
+class Renderer {
+  constructor(container){
+    this.scene=new THREE.Scene();
+    this.scene.fog=new THREE.Fog(0x1a2238,55,130);
+    this.camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,0.1,400);
+    this.gl=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+    this.gl.setSize(innerWidth,innerHeight);
+    this.gl.setPixelRatio(Math.min(devicePixelRatio,2));
+    this.gl.shadowMap.enabled=true; this.gl.shadowMap.type=THREE.PCFSoftShadowMap;
+    this.gl.toneMapping=THREE.ACESFilmicToneMapping;
+    this.gl.toneMappingExposure=1.18; // >1 = warmer outdoor grading
+    container.appendChild(this.gl.domElement);
+
+    this.composer=new EffectComposer(this.gl);
+    this.composer.addPass(new RenderPass(this.scene,this.camera));
+    this.outline=new OutlinePass(new THREE.Vector2(innerWidth,innerHeight),this.scene,this.camera);
+    this.outline.edgeStrength=3.0; this.outline.edgeThickness=1.0; this.outline.edgeGlow=0.0;
+    this.outline.visibleEdgeColor.set('#0a0d18'); this.outline.hiddenEdgeColor.set('#0a0d18');
+    this.composer.addPass(this.outline);
+    this.bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),1.2,0.4,0.3);
+    this.composer.addPass(this.bloom);
+    this.composer.addPass(new OutputPass());
+
+    addEventListener('resize',()=>this.resize());
+  }
+  resize(){
+    this.camera.aspect=innerWidth/innerHeight; this.camera.updateProjectionMatrix();
+    this.gl.setSize(innerWidth,innerHeight); this.composer.setSize(innerWidth,innerHeight);
+    this.outline.setSize(innerWidth,innerHeight);
+  }
+  render(){ this.composer.render(); }
+}
+
+/* ====================================================================
+   CameraController — smooth third-person orbit follow.
+   distance 8 (clamp 4..14); polar clamped to avoid flips.
+   ==================================================================== */
+class CameraController {
+  constructor(camera,input){
+    this.cam=camera; this.input=input;
+    this.target=new THREE.Vector3();
+    this.distance=8; this.azimuth=Math.PI; this.polar=1.05;
+    this.minPolar=0.4; this.maxPolar=1.45; this.sens=0.005;
+    this._cur=new THREE.Vector3(0,6,16);
+  }
+  update(targetPos,dt){
+    this.azimuth-=this.input.lookDelta.x*this.sens;
+    this.polar-=this.input.lookDelta.y*this.sens;
+    this.polar=Math.max(this.minPolar,Math.min(this.maxPolar,this.polar));
+    this.input.lookDelta.set(0,0);
+    this.distance=Math.max(4,Math.min(14,this.distance+this.input.zoomDelta));
+    this.input.zoomDelta=0;
+    this.target.lerp(targetPos.clone().add(new THREE.Vector3(0,1.4,0)),Math.min(1,dt*8));
+    const sp=this.polar;
+    const off=new THREE.Vector3(Math.sin(this.azimuth)*Math.sin(sp),Math.cos(sp),Math.cos(this.azimuth)*Math.sin(sp)).multiplyScalar(this.distance);
+    const desired=this.target.clone().add(off);
+    this._cur.lerp(desired,Math.min(1,dt*9));
+    this.cam.position.copy(this._cur);
+    this.cam.lookAt(this.target);
+  }
+  groundForward(){
+    const f=new THREE.Vector3(this.target.x-this.cam.position.x,0,this.target.z-this.cam.position.z);
+    if(f.lengthSq()<1e-5) f.set(0,0,-1);
+    return f.normalize();
+  }
+}
+
+/* ====================================================================
+   Player — the torcedor. Movement + carry state.
+   ==================================================================== */
+class Player {
+  constructor(scene,toon,teamKey){
+    const t=TEAM[teamKey]; this.team=teamKey;
+    this.group=buildHumanoid(toon,{shirt:t.color,pants:0x1c2340,hair:0x231812,
+      skin:teamKey==='gar'?0xcf8e5c:0xc98a58});
+    const scarf=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.5,0.05), toon.mat(t.color,{emissive:t.color,emissiveIntensity:0.25}));
+    scarf.position.set(0,1.2,-0.25); this.group.add(scarf);
+    scene.add(this.group);
+    this.pos=new THREE.Vector3(0,0,12); this.vel=new THREE.Vector3();
+    this.onGround=true; this.speedWalk=5.5; this.speedRun=9.5;
+    this.facing=Math.PI; this.carryMesh=null; this.walkT=0;
+  }
+  setCarryMesh(mesh){
+    if(this.carryMesh) this.group.remove(this.carryMesh);
+    this.carryMesh=mesh;
+    if(mesh){ mesh.scale.setScalar(0.6); mesh.position.set(0,1.5,0.45); this.group.add(mesh); }
+  }
+}
+
+/* ====================================================================
+   NPC — townsperson or quesito character.
+   role: 'giver/quesito' (reveals loss + receives item),
+         'clue' (location hint), 'flavor' (ambient).
+   ==================================================================== */
+class NPC {
+  constructor(scene,toon,def){
+    Object.assign(this,def);
+    this.group=buildHumanoid(toon,def.look||{shirt:def.color||0x888888});
+    this.group.position.copy(def.pos);
+    if(def.rotY!==undefined) this.group.rotation.y=def.rotY;
+    this.label=makeLabel(def.name,def.role==='quesito'?'#ffd98a':'#eaf0ff',0.9);
+    this.label.position.set(0,2.5,0); this.group.add(this.label);
+    const ring=new THREE.Mesh(new THREE.RingGeometry(0.7,0.9,28),
+      new THREE.MeshBasicMaterial({color:0xc8a96e,transparent:true,opacity:0.35,side:THREE.DoubleSide}));
+    ring.rotation.x=-Math.PI/2; ring.position.y=0.03; this.group.add(ring); this.ring=ring;
+    scene.add(this.group); this.baseY=def.pos.y||0; this.t=Math.random()*10;
+  }
+  update(dt){
+    this.t+=dt;
+    this.group.position.y=this.baseY+Math.sin(this.t*1.5)*0.04;
+    this.ring.material.opacity=0.25+Math.sin(this.t*3)*0.12;
+  }
+}
+
+/* ====================================================================
+   WorldItem — a findable lost sacred object (glow + label + owner).
+   ==================================================================== */
+class WorldItem {
+  constructor(scene,toon,def){
+    Object.assign(this,def); this.toon=toon;
+    this.group=new THREE.Group(); this.group.position.copy(def.pos); this.group.position.y=1.0;
+    this.mesh=this._buildMesh(toon,def); this.group.add(this.mesh);
+    const halo=new THREE.Mesh(new THREE.SphereGeometry(0.8,16,16),
+      new THREE.MeshBasicMaterial({color:def.color||0xffd070,transparent:true,opacity:0.18,blending:THREE.AdditiveBlending}));
+    this.group.add(halo); this.halo=halo;
+    this.light=new THREE.PointLight(def.color||0xffd070,2.2,8); this.group.add(this.light);
+    this.label=makeLabel(def.name,'#ffe8a8',0.85); this.label.position.set(0,1.7,0); this.group.add(this.label);
+    scene.add(this.group); this.t=0; this.collected=false;
+  }
+  _buildMesh(toon,def){
+    const c=def.color||0xffd070, m=toon.glow(c,1.6); let geo;
+    switch(def.shape){
+      case 'maraca': geo=new THREE.SphereGeometry(0.4,16,16); break;
+      case 'arco': geo=new THREE.TorusGeometry(0.4,0.07,10,24,Math.PI); break;
+      case 'estandarte': geo=new THREE.BoxGeometry(0.5,0.7,0.05); break;
+      case 'agogo': geo=new THREE.ConeGeometry(0.3,0.7,16); break;
+      case 'chapeu': geo=new THREE.CylinderGeometry(0.45,0.45,0.1,20); break;
+      default: geo=new THREE.OctahedronGeometry(0.4);
+    }
+    const mesh=new THREE.Mesh(geo,m);
+    if(def.shape==='maraca'){ const h=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,0.5,8),m); h.position.y=-0.45; mesh.add(h); }
+    return mesh;
+  }
+  cloneCarry(){ return this.mesh.clone(); }
+  update(dt){
+    if(this.collected) return;
+    this.t+=dt;
+    this.mesh.rotation.y+=dt*1.6;
+    this.group.position.y=1.0+Math.sin(this.t*2)*0.18;
+    this.halo.scale.setScalar(1+Math.sin(this.t*3)*0.12);
+    this.light.intensity=2+Math.sin(this.t*4)*0.8;
+  }
+  hide(){ this.group.visible=false; this.collected=true; }
+}
+
+/* ====================================================================
+   QuestManager — quest chains, current step, scoring.
+   ==================================================================== */
+class QuestManager {
+  constructor(game){ this.game=game; this.quests=[]; this.carried=null; this.completedCount=0; }
+  define(list){ this.quests=list.map(q=>({...q,started:false,found:false,done:false,clueIndex:0})); }
+  byId(id){ return this.quests.find(q=>q.id===id); }
+  start(id){
+    const q=this.byId(id); if(!q||q.started) return false;
+    q.started=true; this.game.ui.toast(`Nova missão: ${q.title}`);
+    this.game.refreshObjective(); this.game.ui.renderLog(this); return true;
+  }
+  giveClue(questId,idx){
+    const q=this.byId(questId); if(!q) return;
+    if(idx>q.clueIndex) q.clueIndex=idx;
+    this.game.refreshObjective(); this.game.ui.renderLog(this);
+  }
+  pickup(questId){
+    const q=this.byId(questId); if(!q||q.found||q.done) return;
+    q.found=true; this.carried=questId;
+    this.game.refreshObjective(); this.game.ui.renderLog(this);
+  }
+  complete(questId){
+    const q=this.byId(questId); if(!q||q.done) return false;
+    q.done=true; this.carried=null; this.completedCount++;
+    this.game.refreshObjective(); this.game.ui.renderLog(this); return true;
+  }
+  currentObjective(){
+    if(this.carried){ const q=this.byId(this.carried); return `Leve ${q.item} de volta para ${q.ownerName}.`; }
+    const active=this.quests.filter(q=>q.started&&!q.done);
+    if(active.length){
+      const q=active[0];
+      if(q.found) return `Leve ${q.item} de volta para ${q.ownerName}.`;
+      const clue=q.clues[Math.min(q.clueIndex,q.clues.length-1)];
+      if(q.clueIndex>0) return `${q.title}: ${clue}`;
+      return `${q.title}: procure pistas pela cidade.`;
+    }
+    if(this.quests.some(q=>!q.started)) return `Converse com os quesitos no Bumbódromo para descobrir o que se perdeu.`;
+    return `Todos os objetos foram recuperados! Aproveite o festival.`;
+  }
+}
+
+/* ====================================================================
+   UIManager — DOM HUD/overlays glue.
+   ==================================================================== */
+class UIManager {
+  constructor(game){ this.game=game; this._toastTimer=null; this.dlgLines=[]; this.dlgEnd=null; }
+  showHUD(){ $('hud').classList.remove('hidden'); $('objBanner').classList.remove('hidden'); }
+  toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show');
+    clearTimeout(this._toastTimer); this._toastTimer=setTimeout(()=>t.classList.remove('show'),2400); }
+  setNight(n){ $('nightVal').textContent=n; }
+  setWallet(team,n){ $('walletLab').textContent=TEAM[team].token; $('walletVal').textContent=`${TEAM[team].tokSym} ${n}`; }
+  setScores(gar,cap){ $('sbGar').textContent=`GAR ${Math.floor(gar)}`; $('sbCap').textContent=`CAP ${Math.floor(cap)}`; }
+  setObjective(text){ $('objText').textContent=text; }
+  showTalk(label){ $('talkLabel').textContent=label; $('talkPrompt').classList.remove('hidden'); }
+  hideTalk(){ $('talkPrompt').classList.add('hidden'); }
+  openDialogue(npc,lines,onEnd){
+    this.dlgLines=lines.slice(); this.dlgEnd=onEnd||null;
+    $('dlgAvatar').textContent=npc.emoji||'?';
+    $('dlgAvatar').style.background=npc.cssColor||'#445';
+    $('dlgName').textContent=npc.name;
+    $('dialogue').classList.remove('hidden');
+    this.game.state='dialogue';
+    this._nextLine();
+  }
+  _nextLine(){
+    if(this.dlgLines.length===0){ this.closeDialogue(); return; }
+    $('dlgText').textContent=this.dlgLines.shift(); this.game.audio.blip();
+  }
+  advanceDialogue(){
+    if($('dialogue').classList.contains('hidden')) return;
+    if(this.dlgLines.length>0) this._nextLine(); else this.closeDialogue();
+  }
+  closeDialogue(){
+    $('dialogue').classList.add('hidden');
+    if(this.game.state==='dialogue') this.game.state='explore';
+    const cb=this.dlgEnd; this.dlgEnd=null; if(cb) cb();
+  }
+  renderLog(qm){
+    const carryBox=$('carryBox'); const qc=qm.carried?qm.byId(qm.carried):null;
+    carryBox.innerHTML=qc?`<div class="carry">Carregando: ${qc.item} — entregue a ${qc.ownerName}</div>`:'';
+    const list=$('qlist'); list.innerHTML='';
+    const visible=qm.quests.filter(q=>q.started);
+    if(!visible.length){ list.innerHTML='<p style="opacity:.6;text-align:center">Nenhuma missão ativa. Fale com os quesitos no Bumbódromo.</p>'; return; }
+    visible.forEach(q=>{
+      const div=document.createElement('div'); div.className='qcard'+(q.done?' done':'');
+      const status=q.done?'✔ Concluída':(q.found?`Levar ${q.item} a ${q.ownerName}`:'Em andamento');
+      const clue=q.clueIndex>0?`<div class="qc">Pista: ${q.clues[Math.min(q.clueIndex,q.clues.length-1)]}</div>`:'';
+      div.innerHTML=`<div class="qt">${q.title}</div><div class="qs">${status}</div>${clue}`;
+      list.appendChild(div);
+    });
+  }
+}
+
+/* ====================================================================
+   GameWorld — builds all geometry, lights, NPCs, items, platforms.
+   ==================================================================== */
+class GameWorld {
+  constructor(game){
+    this.game=game; this.scene=game.renderer.scene; this.toon=game.toon;
+    this.npcs=[]; this.items=[];
+    this._lights(); this._sky(); this._ground();
+    this._bumbodromo(); this._cidade(-1); this._cidade(1);
+    this._porto(); this._praca(); this._floresta();
+  }
+  _lights(){
+    this.scene.add(new THREE.HemisphereLight(0xfff1d0,0x33405e,0.9));
+    const sun=new THREE.DirectionalLight(0xffe8b0,1.5);
+    sun.position.set(30,50,20); sun.castShadow=true;
+    sun.shadow.mapSize.set(2048,2048); sun.shadow.camera.near=1; sun.shadow.camera.far=160;
+    const d=90; sun.shadow.camera.left=-d; sun.shadow.camera.right=d; sun.shadow.camera.top=d; sun.shadow.camera.bottom=-d;
+    sun.shadow.bias=-0.0004; this.scene.add(sun);
+  }
+  _sky(){
+    const geo=new THREE.SphereGeometry(300,32,16);
+    const mat=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,
+      uniforms:{top:{value:new THREE.Color(0x2a3a6e)},bot:{value:new THREE.Color(0xf3a86b)}},
+      vertexShader:`varying vec3 vP; void main(){ vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+      fragmentShader:`varying vec3 vP; uniform vec3 top; uniform vec3 bot;
+        void main(){ float h=clamp(vP.y*0.0033+0.5,0.0,1.0); gl_FragColor=vec4(mix(bot,top,h),1.0);} `});
+    this.scene.add(new THREE.Mesh(geo,mat));
+  }
+  _ground(){
+    const g=new THREE.Mesh(new THREE.PlaneGeometry(180,180), this.toon.mat(0x4f7a3a));
+    g.rotation.x=-Math.PI/2; g.receiveShadow=true; this.scene.add(g);
+    const pathMat=this.toon.mat(0xb79a64);
+    const mkPath=(x,z,w,d)=>{ const p=new THREE.Mesh(new THREE.PlaneGeometry(w,d),pathMat);
+      p.rotation.x=-Math.PI/2; p.position.set(x,0.02,z); p.receiveShadow=true; this.scene.add(p); };
+    mkPath(0,18,7,40); mkPath(0,-18,7,40); mkPath(-20,0,40,7); mkPath(20,0,40,7);
+  }
+  _addBuilding(x,z,w,h,d,color,outline=true){
+    const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), this.toon.mat(color));
+    m.position.set(x,h/2,z); m.castShadow=true; m.receiveShadow=true; this.scene.add(m);
+    const roof=new THREE.Mesh(new THREE.ConeGeometry(Math.max(w,d)*0.78,h*0.5,4), this.toon.mat(0x8a3b2a));
+    roof.position.set(x,h+h*0.25,z); roof.rotation.y=Math.PI/4; roof.castShadow=true; this.scene.add(roof);
+    if(outline) this.game.renderer.outline.selectedObjects.push(m);
+    this.game.physics.addPlatform(new THREE.Vector3(x-w/2,0,z-d/2),new THREE.Vector3(x+w/2,h,z+d/2));
+    return m;
+  }
+  _bumbodromo(){
+    const base=new THREE.Mesh(new THREE.CylinderGeometry(15,16,1.2,40), this.toon.mat(0x39264f));
+    base.position.set(0,0.6,0); base.receiveShadow=true; this.scene.add(base);
+    const wall=new THREE.Mesh(new THREE.TorusGeometry(14,1.6,16,48), this.toon.mat(0x6a2c8a,{emissive:0x8a2cb0,emissiveIntensity:0.35}));
+    wall.rotation.x=Math.PI/2; wall.position.set(0,2.4,0); wall.castShadow=true; this.scene.add(wall);
+    this.game.renderer.outline.selectedObjects.push(wall);
+    for(let i=0;i<6;i++){ const a=i/6*Math.PI*2;
+      const col=i%2?0x6a5cff:0xff5ccf;
+      const l=new THREE.PointLight(col,2.4,26); l.position.set(Math.cos(a)*10,5,Math.sin(a)*10); this.scene.add(l);
+      const bulb=new THREE.Mesh(new THREE.SphereGeometry(0.5,12,12), this.toon.glow(col,2)); bulb.position.copy(l.position); this.scene.add(bulb);
+    }
+    const stage=new THREE.Mesh(new THREE.CylinderGeometry(4,4.5,0.6,32), this.toon.mat(0x2a1d3a));
+    stage.position.set(0,0.3,0); this.scene.add(stage);
+  }
+  _cidade(side){
+    const baseX=side*42, team=side<0?TEAM.gar:TEAM.cap, tint=side<0?0xc24040:0x4070c2;
+    for(let i=0;i<6;i++){
+      const x=baseX+(Math.random()-0.5)*22, z=(i-2.5)*8+(Math.random()-0.5)*5;
+      const h=4+Math.random()*4, w=4+Math.random()*2;
+      this._addBuilding(x,z,w,h,w,i%2?tint:0xd8c39a);
+      const banner=new THREE.Mesh(new THREE.PlaneGeometry(2,3), this.toon.mat(team.color,{emissive:team.color,emissiveIntensity:0.3}));
+      banner.position.set(x,h*0.6,z+w/2+0.06); this.scene.add(banner);
+      const lc=side<0?0xff6a30:0x4fa0ff;
+      const l=new THREE.PointLight(lc,2,14); l.position.set(x+w/2+0.5,h*0.5,z); this.scene.add(l);
+      const fire=new THREE.Mesh(new THREE.SphereGeometry(0.28,10,10), this.toon.glow(side<0?0xff7a30:0x6ab0ff,2)); fire.position.copy(l.position); this.scene.add(fire);
+    }
+    const sign=makeLabel(`Cidade do ${team.name}`,team.hex,1.6); sign.position.set(baseX,8,0); this.scene.add(sign);
+  }
+  _porto(){
+    const river=new THREE.Mesh(new THREE.PlaneGeometry(180,60),
+      new THREE.MeshToonMaterial({color:0x2a6aa0,gradientMap:this.toon.gradient,transparent:true,opacity:0.92}));
+    river.rotation.x=-Math.PI/2; river.position.set(0,0.05,70); this.scene.add(river); this.river=river;
+    for(let i=0;i<3;i++){ const x=(i-1)*16; const dock=this._addBuilding(x,52,5,0.6,18,0x8a6238,false); dock.position.y=0.3; }
+    for(let i=0;i<5;i++){ const c=new THREE.Mesh(new THREE.CapsuleGeometry(0.5,2.4,4,8), this.toon.mat(0x6a4422));
+      c.rotation.z=Math.PI/2; c.position.set((i-2)*9,0.4,62+Math.sin(i)*3); c.castShadow=true; this.scene.add(c); }
+    const sign=makeLabel('Porto Amazonas','#9fd0ff',1.5); sign.position.set(0,6,46); this.scene.add(sign);
+  }
+  _praca(){
+    const px=0,pz=-30;
+    this._addBuilding(px,pz-3,7,6,9,0xe8dcc0);
+    this._addBuilding(px,pz-8,3,11,3,0xe0d2b0);
+    const cross=new THREE.Mesh(new THREE.BoxGeometry(0.3,1.6,0.3), this.toon.glow(0xffe6a0,1.2)); cross.position.set(px,15,pz-8); this.scene.add(cross);
+    const f=new THREE.Mesh(new THREE.CylinderGeometry(2.4,2.6,0.8,24), this.toon.mat(0xb9c4d4)); f.position.set(px,0.4,pz+6); f.castShadow=true; this.scene.add(f);
+    const water=new THREE.Mesh(new THREE.CylinderGeometry(2.0,2.0,0.2,24), this.toon.glow(0x6ab0ff,0.5)); water.position.set(px,0.7,pz+6); this.scene.add(water);
+    const sign=makeLabel('Praça da Catedral','#ffe0b0',1.4); sign.position.set(px,8,pz+10); this.scene.add(sign);
+  }
+  _floresta(){
+    const spots=[];
+    for(let i=0;i<70;i++){ const a=Math.random()*Math.PI*2, r=55+Math.random()*22;
+      const x=Math.cos(a)*r, z=Math.sin(a)*r-12;
+      if(Math.abs(x)>74||Math.abs(z)>74) continue; spots.push([x,z]); }
+    for(let i=0;i<24;i++) spots.push([(Math.random()-0.5)*30,-52-Math.random()*16]);
+    spots.forEach(([x,z])=>{
+      const h=2.5+Math.random()*2.5;
+      const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.4,h,7), this.toon.mat(0x6b4a2a)); trunk.position.set(x,h/2,z); trunk.castShadow=true; this.scene.add(trunk);
+      const fol=new THREE.Mesh(new THREE.SphereGeometry(1.4+Math.random(),10,8), this.toon.mat(0x2f7a3a)); fol.position.set(x,h+1,z); fol.castShadow=true; this.scene.add(fol);
+    });
+    const sign=makeLabel('Floresta Amazônica','#9fe0a0',1.4); sign.position.set(0,9,-58); this.scene.add(sign);
+  }
+  addNPC(def){ const n=new NPC(this.scene,this.toon,def); this.npcs.push(n); return n; }
+  addItem(def){ const it=new WorldItem(this.scene,this.toon,def); this.items.push(it); return it; }
+  update(dt){
+    this.npcs.forEach(n=>n.update(dt));
+    this.items.forEach(i=>i.update(dt));
+    if(this.river) this.river.material.opacity=0.88+Math.sin(performance.now()*0.001)*0.06;
+  }
+}
+
+/* ====================================================================
+   Game — main controller / loop / state machine.
+   ==================================================================== */
+class Game {
+  constructor(){
+    window.__game=this;
+    this.container=$('app');
+    this.renderer=new Renderer(this.container);
+    this.toon=new ToonFactory();
+    this.input=new InputManager(this.renderer.gl.domElement);
+    this.physics=new PhysicsEngine();
+    this.particles=new ParticleSystem(this.renderer.scene);
+    this.camCtrl=new CameraController(this.renderer.camera,this.input);
+    this.audio=new AudioEngine();
+    this.ui=new UIManager(this);
+    this.qm=new QuestManager(this);
+    this.state='intro';
+    this.night=1; this.maxNight=3;
+    this.score={gar:0,cap:0};
+    this.clock=new THREE.Clock();
+    this.nightTargets=[];
+    this._confettiTimer=null;
+    this._setupUIEvents();
+    this._loop=this._loop.bind(this);
+  }
+
+  buildContent(){
+    const t=TEAM[this.team];
+    this.qm.define([
+      {id:'maraca',title:'O Maracá do Pajé',item:'o Maracá Sagrado',ownerId:'paje',ownerName:'o Pajé',
+        clues:['','Um pescador no Porto viu algo brilhando perto das canoas.']},
+      {id:'arco',title:'O Arco da Cunhã-Poranga',item:'o Arco e Flecha',ownerId:'cunha',ownerName:'a Cunhã-Poranga',
+        clues:['','Uma feirante diz que uma criança levou um arco para perto da igreja, na Praça da Catedral.']},
+      {id:'estandarte',title:'O Estandarte do Porta-Estandarte',item:'o Estandarte',ownerId:'porta',ownerName:'o Porta-Estandarte',
+        clues:['','O vento jogou o estandarte na beira da floresta, ao norte. Um seringueiro viu de longe.']},
+      {id:'agogo',title:'O Agogô do Levantador de Toadas',item:'o Agogô',ownerId:'levanta',ownerName:'o Levantador de Toadas',
+        clues:['','Um faxineiro lembra: o agogô ficou esquecido nas arquibancadas do Bumbódromo.']},
+      {id:'chapeu',title:'O Chapéu do Amo do Boi',item:'o Chapéu do Amo',ownerId:'amo',ownerName:'o Amo do Boi',
+        clues:['','Um curumim conta que o chapéu voou para perto da Cidade do '+t.name+'.']},
+    ]);
+
+    const W=this.world;
+    // Quesito characters (reveal loss + receive returned item) near the Bumbódromo
+    W.addNPC({id:'paje',name:'Pajé',emoji:'🪶',color:0x7a4a2a,cssColor:'#7a4a2a',role:'quesito',questGive:'maraca',
+      pos:new THREE.Vector3(-5,0,-8),rotY:0.3,look:{shirt:0x7a4a2a,hair:0x111111}});
+    W.addNPC({id:'cunha',name:'Cunhã-Poranga',emoji:'💃',color:0xd23b8a,cssColor:'#d23b8a',role:'quesito',questGive:'arco',
+      pos:new THREE.Vector3(5,0,-8),rotY:-0.3,look:{shirt:0xd23b8a,hair:0x201018}});
+    W.addNPC({id:'porta',name:'Porta-Estandarte',emoji:'🚩',color:0xc8a96e,cssColor:'#c8a96e',role:'quesito',questGive:'estandarte',
+      pos:new THREE.Vector3(-9,0,-2),rotY:0.6,look:{shirt:0xc8a96e}});
+    W.addNPC({id:'levanta',name:'Levantador de Toadas',emoji:'🎤',color:0x4a8ac0,cssColor:'#4a8ac0',role:'quesito',questGive:'agogo',
+      pos:new THREE.Vector3(9,0,-2),rotY:-0.6,look:{shirt:0x4a8ac0}});
+    W.addNPC({id:'amo',name:'Amo do Boi',emoji:'🤠',color:0x9a6a2a,cssColor:'#9a6a2a',role:'quesito',questGive:'chapeu',
+      pos:new THREE.Vector3(0,0,-11),rotY:0,look:{shirt:0x9a6a2a,hair:0x3a2a14}});
+
+    // Clue NPCs scattered across districts
+    W.addNPC({id:'pescador',name:'Zé Pescador',emoji:'🎣',color:0x3a7a9a,cssColor:'#3a7a9a',role:'clue',clueFor:'maraca',clueIdx:1,
+      pos:new THREE.Vector3(-2,0.3,50),rotY:Math.PI,
+      lines:['Ô visse... eu tava puxando a rede aqui no porto.','Vi um brilho danado perto das canoas, lá na beira.','Aposto que é o tal do maracá do Pajé! Vai lá ver.']});
+    W.addNPC({id:'feirante',name:'Dona Feirante',emoji:'🧺',color:0xc06a3a,cssColor:'#c06a3a',role:'clue',clueFor:'arco',clueIdx:1,
+      pos:new THREE.Vector3(-22,0,-12),rotY:0.5,
+      lines:['Menino, eu vi uma criança correndo com um arco!','Foi pra banda da Praça da Catedral, perto da igreja.','Procura lá atrás da fonte, deve estar largado.']});
+    W.addNPC({id:'seringueiro',name:'Seu Seringueiro',emoji:'🌳',color:0x4a6a2a,cssColor:'#4a6a2a',role:'clue',clueFor:'estandarte',clueIdx:1,
+      pos:new THREE.Vector3(-14,0,-44),rotY:0.2,
+      lines:['Tava cortando seringa na mata quando deu uma ventania.','Um pano grande, colorido, voou pra dentro da floresta ao norte.','Era o estandarte! Entra na mata e procura entre as árvores.']});
+    W.addNPC({id:'faxineiro',name:'Seu Faxineiro',emoji:'🧹',color:0x6a6a8a,cssColor:'#6a6a8a',role:'clue',clueFor:'agogo',clueIdx:1,
+      pos:new THREE.Vector3(11,0,9),rotY:-1.2,
+      lines:['Eu varro o Bumbódromo todo dia, rapaz.','Achei um agogô esquecido lá nas arquibancadas, do lado de fora.','Tá brilhando que é uma beleza. Vai lá pegar pro Levantador.']});
+    W.addNPC({id:'curumim',name:'Curumim',emoji:'🧒',color:0xe0a060,cssColor:'#e0a060',role:'clue',clueFor:'chapeu',clueIdx:1,
+      pos:new THREE.Vector3(0,0,22),rotY:Math.PI,
+      lines:['Tio! O chapéu do Amo voou com o vento!','Foi parar lá perto da Cidade do '+t.name+'.','Corre lá que ele tá precisando pra abrir a galera!']});
+
+    // Ambient flavor townsperson
+    W.addNPC({id:'galera',name:'Torcedor',emoji:'🎉',color:t.color,cssColor:t.hex,role:'flavor',
+      pos:new THREE.Vector3(6,0,12),rotY:Math.PI,
+      lines:['Esse ano é nosso, parente! Garra, raça e amor!','Recupera os quesitos pra gente arrasar na arena!']});
+
+    // World items at concrete landmarks
+    W.addItem({id:'maraca',name:'Maracá',shape:'maraca',color:0xffd070,questId:'maraca',pos:new THREE.Vector3(14,0,62)});
+    W.addItem({id:'arco',name:'Arco e Flecha',shape:'arco',color:0xff9bd0,questId:'arco',pos:new THREE.Vector3(0,0,-22)});
+    W.addItem({id:'estandarte',name:'Estandarte',shape:'estandarte',color:0x9bff9b,questId:'estandarte',pos:new THREE.Vector3(8,0,-54)});
+    W.addItem({id:'agogo',name:'Agogô',shape:'agogo',color:0xffe070,questId:'agogo',pos:new THREE.Vector3(16,0,-2)});
+    W.addItem({id:'chapeu',name:'Chapéu do Amo',shape:'chapeu',color:0xffb060,questId:'chapeu',
+      pos:new THREE.Vector3(this.team==='gar'?-40:40,0,14)});
+
+    // night targets: 2,2,1 (5 total)
+    this.nightTargets=[['maraca','arco'],['estandarte','agogo'],['chapeu']];
+  }
+
+  _setupUIEvents(){
+    document.querySelectorAll('.team-card').forEach(c=>c.addEventListener('click',()=>this.startGame(c.dataset.team)));
+    $('btnLog').onclick=()=>this.toggleLog();
+    $('qlClose').onclick=()=>this.toggleLog(false);
+    $('btnPause').onclick=()=>this.togglePause();
+    $('resumeBtn').onclick=()=>this.togglePause(false);
+    $('pauseLogBtn').onclick=()=>{ this.togglePause(false); this.toggleLog(true); };
+    $('neNext').onclick=()=>this.nextNight();
+    $('fRestart').onclick=()=>location.reload();
+    $('dialogue').addEventListener('click',()=>this.ui.advanceDialogue());
+    this._setupTouch();
+  }
+
+  onKey(k){
+    if(k==='escape') this.togglePause();
+    if(k==='j'||k==='tab') this.toggleLog();
+  }
+
+  toggleLog(force){
+    const el=$('questlog'); const show=force!==undefined?force:el.classList.contains('hidden');
+    if(show){ this.ui.renderLog(this.qm); el.classList.remove('hidden'); if(this.state==='explore') this.state='menu'; }
+    else { el.classList.add('hidden'); if(this.state==='menu') this.state='explore'; }
+  }
+  togglePause(force){
+    if(['intro','nightEnd','final'].includes(this.state)) return;
+    const el=$('pause'); const show=force!==undefined?force:el.classList.contains('hidden');
+    if(show){ el.classList.remove('hidden'); this.state='paused'; this.audio.stopAmbient(); }
+    else { el.classList.add('hidden'); this.state='explore'; this.audio.startAmbient(); }
+  }
+
+  startGame(teamKey){
+    this.team=teamKey;
+    this.audio.ambientScale=TOADAS[teamKey].scale;  // trilha ambiente no clima da toada do boi
+    this.audio.resume(); this.audio.startAmbient();
+    $('intro').classList.add('hidden');
+    this.world=new GameWorld(this);
+    this.player=new Player(this.renderer.scene,this.toon,teamKey);
+    this.renderer.outline.selectedObjects.push(this.player.group);
+    this.buildContent();
+    this.wallet=parseInt(localStorage.getItem(TEAM[teamKey].wallet)||'0',10)||0;
+    this.ui.showHUD(); this.ui.setNight(this.night); this.ui.setWallet(teamKey,this.wallet); this.ui.setScores(0,0);
+    if(this.input.isTouch) $('touchUI').classList.remove('hidden');
+    this.state='explore';
+    this.refreshObjective();
+    this.ui.toast(`Vai, ${TEAM[teamKey].name}! Recupere os quesitos.`);
+    // refrão de abertura da toada-tema 2026
+    setTimeout(()=>this.ui.toast(TOADAS[teamKey].abertura), 2600);
+    this.clock.start();
+    requestAnimationFrame(this._loop);
+  }
+
+  refreshObjective(){ this.ui.setObjective(this.qm.currentObjective()); }
+  addWallet(n){ this.wallet+=n; localStorage.setItem(TEAM[this.team].wallet,this.wallet); this.ui.setWallet(this.team,this.wallet); }
+
+  nearestInteractable(){
+    let best=null,bd=2.8; const pp=this.player.pos;
+    for(const it of this.world.items){
+      if(it.collected) continue;
+      const q=this.qm.byId(it.questId); if(!q||!q.started) continue;
+      const d=pp.distanceTo(it.group.position);
+      if(d<bd){ best={type:'item',ref:it}; bd=d; }
+    }
+    for(const n of this.world.npcs){
+      const d=pp.distanceTo(n.group.position);
+      if(d<bd){ best={type:'npc',ref:n}; bd=d; }
+    }
+    return best;
+  }
+
+  interact(target){
+    if(!target) return;
+    if(target.type==='item'){ this._pickupItem(target.ref); return; }
+    const n=target.ref;
+    if(n.role==='quesito'){
+      const q=this.qm.byId(n.questGive);
+      if(this.qm.carried===n.questGive && q.found){ this._returnItem(n,q); return; }
+      if(!q.started){ this.ui.openDialogue(n,this._giverLines(n,q),()=>this.qm.start(q.id)); }
+      else if(q.done){ this.ui.openDialogue(n,[`Muito obrigado, parente! Com ${q.item} de volta, o ${TEAM[this.team].name} vai brilhar na arena!`]); }
+      else if(q.found){ this.ui.openDialogue(n,[`Você encontrou ${q.item}? Chega perto e me entrega!`]); }
+      else { this.ui.openDialogue(n,[`Ainda preciso de ${q.item}. ${q.clues[1]||'Pergunte pelo povo da cidade.'}`]); }
+      return;
+    }
+    if(n.role==='clue'){
+      const q=this.qm.byId(n.clueFor);
+      if(q && q.started && !q.found && !q.done){
+        this.ui.openDialogue(n,n.lines,()=>{ this.qm.giveClue(n.clueFor,n.clueIdx); this.ui.toast('Pista anotada no diário!'); });
+      } else if(q && (q.found||q.done)){
+        this.ui.openDialogue(n,['Que bom que achou! O festival agradece, parente.']);
+      } else {
+        this.ui.openDialogue(n,['Tô de olho na cidade... se eu vir algo perdido, te aviso.']);
+      }
+      return;
+    }
+    this.ui.openDialogue(n,n.lines||['Boa noite de festival, parente!']);
+  }
+
+  _giverLines(n,q){
+    return [
+      `Ai, parente... eu sou ${n.name} e perdi ${q.item}!`,
+      `Sem isso eu não consigo me apresentar na arena do Bumbódromo.`,
+      `Pergunte pelo povo da cidade — alguém deve ter visto ${q.item}.`,
+    ];
+  }
+
+  _pickupItem(it){
+    if(this.qm.carried){ this.ui.toast('Você já está carregando um objeto! Entregue primeiro.'); return; }
+    it.hide();
+    this.qm.pickup(it.questId);
+    this.player.setCarryMesh(it.cloneCarry());
+    this.particles.burst(it.group.position.clone(),'pickup');
+    this.audio.pickup();
+    this.ui.toast(`Você pegou ${it.name}!`);
+  }
+
+  _returnItem(n,q){
+    this.ui.openDialogue(n,[
+      `Você achou ${q.item}! Que alegria, parente!`,
+      `Agora o ${TEAM[this.team].name} pode arrasar neste quesito!`,
+    ],()=>{
+      this.qm.complete(q.id);
+      this.player.setCarryMesh(null);
+      this.particles.burst(n.group.position.clone().add(new THREE.Vector3(0,1.5,0)),'return',TEAM[this.team].color);
+      this.audio.fanfare();
+      this.score[this.team]+=18;
+      this.addWallet(15);
+      this.ui.setScores(this.score.gar,this.score.cap);
+      this.ui.toast(`+15 ${TEAM[this.team].token}! Quesito recuperado.`);
+      // refrão temático da toada conforme o item recuperado
+      setTimeout(()=>this.ui.toast(this._toadaForQuest(q)), 2500);
+      this._checkNightEnd();
+    });
+  }
+
+  // Escolhe o refrão de toada 2026 conforme o quesito recuperado.
+  _toadaForQuest(q){
+    const T=TOADAS[this.team];
+    const owner=(q.ownerId||'')+ '|' + (q.id||'');
+    if(/paje|maraca/i.test(owner)) return T.lenda;        // Pajé → toada de lenda/ritual
+    if(/cunha|arco|estandarte|sinha/i.test(owner)) return T.feminino; // itens femininos
+    if(/amo|chapeu|apresent/i.test(owner)) return T.amo;  // Amo do Boi / Apresentador
+    return T.galera;                                       // demais → toada de galera
+  }
+  _checkNightEnd(){
+    const targets=this.nightTargets[this.night-1]||[];
+    if(targets.every(id=>this.qm.byId(id).done)) setTimeout(()=>this._showNightEnd(),1000);
+  }
+  _showNightEnd(){
+    if(this.state==='final') return;
+    const rival=this.team==='gar'?'cap':'gar';
+    this.score[rival]+=10+Math.random()*10;
+    this.score[this.team]+=6+Math.random()*6;
+    this.ui.setScores(this.score.gar,this.score.cap);
+    if(this.night>=this.maxNight){ this._showFinal(); return; }
+    this.state='nightEnd';
+    $('neTitle').textContent=`Fim da Noite ${this.night}`;
+    $('neText').textContent=`Você recuperou os quesitos da noite ${this.night}! A galera vibra nas arquibancadas. Placar parcial:`;
+    $('neGar').textContent=Math.floor(this.score.gar); $('neCap').textContent=Math.floor(this.score.cap);
+    $('nightEnd').classList.remove('hidden');
+    this.audio.win();
+  }
+  nextNight(){
+    $('nightEnd').classList.add('hidden');
+    this.night++; this.ui.setNight(this.night); this.state='explore';
+    this.refreshObjective();
+    this.ui.toast(`Noite ${this.night} começou! Novos quesitos esperam por você.`);
+    setTimeout(()=>this.ui.toast(TOADAS[this.team].galera), 2500); // refrão de galera abre a noite
+    this.audio.startAmbient();
+  }
+  _showFinal(){
+    this.state='final';
+    const rival=this.team==='gar'?'cap':'gar';
+    const won=this.score[this.team]>=this.score[rival];
+    $('fTitle').textContent=won?`${TEAM[this.team].name} é Campeão!`:`Quase lá...`;
+    $('fText').textContent=won
+      ? `${TOADAS[this.team].vitoria}\n\nCom todos os quesitos recuperados, o ${TEAM[this.team].name} encantou os jurados e venceu o Festival de Parintins! A galera explode na arena!`
+      : `O ${TEAM[this.team].name} fez bonito, mas o rival levou a melhor por pouco. Tente de novo e recupere os quesitos mais rápido!`;
+    $('fGar').textContent=Math.floor(this.score.gar); $('fCap').textContent=Math.floor(this.score.cap);
+    $('final').classList.remove('hidden');
+    this.audio.win();
+    if(won && !this._confettiTimer) this._confettiTimer=setInterval(()=>this.particles.burst(this.player.pos.clone(),'confetti'),700);
+  }
+
+  _loop(){
+    requestAnimationFrame(this._loop);
+    const dt=Math.min(0.05,this.clock.getDelta());
+    if(['explore','dialogue','menu'].includes(this.state)){
+      this._updatePlayer(dt);
+      this.world.update(dt);
+      this._updateInteractPrompt();
+      const rival=this.team==='gar'?'cap':'gar';
+      this.score[rival]+=dt*0.25; // CPU passive accrual during exploration
+      this.ui.setScores(this.score.gar,this.score.cap);
+    }
+    this.particles.update(dt);
+    this.camCtrl.update(this.player?this.player.pos:new THREE.Vector3(),dt);
+    this.renderer.render();
+  }
+
+  _updatePlayer(dt){
+    const p=this.player; let running=false;
+    if(this.state==='explore'){
+      this.input.pollKeyboardMove();
+      const m=this.input.move;
+      const fwd=this.camCtrl.groundForward();
+      const right=new THREE.Vector3(fwd.z,0,-fwd.x);
+      const dir=new THREE.Vector3();
+      dir.addScaledVector(fwd,m.y).addScaledVector(right,m.x);
+      running=this.input.running;
+      const speed=running?p.speedRun:p.speedWalk;
+      if(dir.lengthSq()>0.001){
+        dir.normalize();
+        p.vel.x=dir.x*speed; p.vel.z=dir.z*speed;
+        p.facing=Math.atan2(dir.x,dir.z);
+        if(p.onGround && Math.random()<(running?0.6:0.3)) this.particles.burst(p.pos.clone(),'dust');
+      } else { p.vel.x*=this.physics.FRICTION; p.vel.z*=this.physics.FRICTION; }
+      if(this.input.consumeJump() && p.onGround) p.vel.y=this.physics.JUMP_FORCE;
+      if(this.input.consumeInteract()) this.interact(this.nearestInteractable());
+    } else {
+      p.vel.x*=0.8; p.vel.z*=0.8;
+      if(this.state==='dialogue' && this.input.consumeInteract()) this.ui.advanceDialogue();
+    }
+    const ps={pos:p.pos,vel:p.vel,onGround:p.onGround};
+    this.physics.step(ps,dt); p.onGround=ps.onGround;
+    p.group.position.copy(p.pos);
+    let df=p.facing-p.group.rotation.y;
+    while(df>Math.PI) df-=Math.PI*2; while(df<-Math.PI) df+=Math.PI*2;
+    p.group.rotation.y+=df*Math.min(1,dt*12);
+    const moving=(Math.abs(p.vel.x)+Math.abs(p.vel.z))>0.5;
+    p.walkT+=dt*(running?1.4:1);
+    animateWalk(p.group,p.walkT,moving?(running?0.9:0.6):0);
+  }
+
+  _updateInteractPrompt(){
+    if(this.state!=='explore'){ this.ui.hideTalk(); return; }
+    const t=this.nearestInteractable();
+    if(!t){ this.ui.hideTalk(); return; }
+    if(t.type==='item') this.ui.showTalk('Pegar');
+    else {
+      const n=t.ref;
+      if(n.role==='quesito' && this.qm.carried===n.questGive) this.ui.showTalk('Entregar');
+      else this.ui.showTalk('Falar');
+    }
+  }
+
+  _setupTouch(){
+    const joy=$('joy'), nub=$('joyNub');
+    let active=false, cx=60, cy=60, id=null;
+    const setNub=(x,y)=>{ nub.style.left=(x-25)+'px'; nub.style.top=(y-25)+'px'; };
+    const onStart=(e)=>{ const t=e.changedTouches[0]; id=t.identifier; active=true;
+      const r=joy.getBoundingClientRect(); cx=r.left+60; cy=r.top+60; this.audio.resume(); };
+    const onMove=(e)=>{ if(!active) return;
+      for(const t of e.changedTouches){ if(t.identifier!==id) continue;
+        let dx=t.clientX-cx, dy=t.clientY-cy; const len=Math.hypot(dx,dy)||1, max=45;
+        const cl=Math.min(len,max); dx=dx/len*cl; dy=dy/len*cl;
+        setNub(60+dx,60+dy); this.input.setTouchMove(dx/max,-dy/max); this.input._touchRun=len>40; } };
+    const onEnd=(e)=>{ for(const t of e.changedTouches){ if(t.identifier!==id) continue;
+      active=false; id=null; setNub(60,60); this.input.setTouchMove(0,0); this.input._touchRun=false; } };
+    joy.addEventListener('touchstart',onStart,{passive:true});
+    joy.addEventListener('touchmove',onMove,{passive:true});
+    joy.addEventListener('touchend',onEnd,{passive:true});
+    joy.addEventListener('touchcancel',onEnd,{passive:true});
+
+    let camId=null, lx=0, ly=0;
+    window.addEventListener('touchstart',e=>{
+      for(const t of e.changedTouches){
+        if(t.clientX>innerWidth*0.4 && camId===null && !t.target.closest('.tbtn,#joy,.btn,#dialogue,.overlay')){
+          camId=t.identifier; lx=t.clientX; ly=t.clientY;
+        }
+      }
+    },{passive:true});
+    window.addEventListener('touchmove',e=>{
+      for(const t of e.changedTouches){ if(t.identifier!==camId) continue;
+        this.input.addLook((t.clientX-lx),(t.clientY-ly)); lx=t.clientX; ly=t.clientY; }
+    },{passive:true});
+    window.addEventListener('touchend',e=>{ for(const t of e.changedTouches){ if(t.identifier===camId) camId=null; } },{passive:true});
+
+    $('tInteract').addEventListener('touchstart',e=>{ e.preventDefault();
+      if(this.state==='dialogue') this.ui.advanceDialogue();
+      else if(this.state==='explore') this.interact(this.nearestInteractable());
+    });
+    $('tJump').addEventListener('touchstart',e=>{ e.preventDefault(); this.input.jumpQueued=true; });
+    $('tLog').addEventListener('touchstart',e=>{ e.preventDefault(); this.toggleLog(); });
+  }
+}
+
+/* ---- Boot ---- */
+window.addEventListener('load',()=>{
+  try{
+    new Game();
+    $('loading').classList.add('hidden');
+    $('intro').classList.remove('hidden');
+  }catch(err){
+    console.error(err);
+    $('loading').innerHTML='<h1 style="color:#ff8080">Erro ao carregar</h1><p style="opacity:.7">'+err.message+'</p>';
+  }
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+});
+</script>
+</body>
+</html>
