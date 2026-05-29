@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using VivaParintins.Data;
+using VivaParintins.Phases;
 
 namespace VivaParintins.Core
 {
@@ -68,6 +69,39 @@ namespace VivaParintins.Core
             return phaseStars[index - 1] > 0;
         }
 
+        // ── Runner phase navigation ───────────────────────────────────────
+        // Total de 8 fases runner + mini-games originais
+        public int currentPhaseIndex;
+        const int TotalRunnerPhases = 8;
+
+        public void LoadPhaseRunner(int index)
+        {
+            currentPhaseIndex = Mathf.Clamp(index, 0, TotalRunnerPhases - 1);
+            SaveProgress();
+            // Carrega a cena da fase pelo índice — nomes definidos em PhaseDefinitions
+            string[] sceneNames = {
+                "Phase_Porto", "Phase_Feira", "Phase_Mercado", "Phase_Orla",
+                "Phase_Comunas", "Phase_Curral", "Phase_Praca", "Phase_Bumbodromo"
+            };
+            SceneManager.LoadScene(sceneNames[currentPhaseIndex]);
+        }
+
+        public void LoadNextPhase()
+        {
+            int next = currentPhaseIndex + 1;
+            if (next >= TotalRunnerPhases)
+                SceneManager.LoadScene(SCENE_MAP);
+            else
+                LoadPhaseRunner(next);
+        }
+
+        public void OnPlayerDied()
+        {
+            // PhaseRunner trata o auto-revive via GameEconomyManager
+            var runner = UnityEngine.Object.FindObjectOfType<Phases.PhaseRunner>();
+            runner?.OnPlayerDied();
+        }
+
         // ── Luma coins ───────────────────────────────────────────────────
         public void AddLuma(int amount)
         {
@@ -84,6 +118,7 @@ namespace VivaParintins.Core
             PlayerPrefs.SetInt("collectiveCap", collectiveCap);
             for (int i = 0; i < phaseStars.Length; i++)
                 PlayerPrefs.SetInt($"phase_{i}", phaseStars[i]);
+            PlayerPrefs.SetInt("currentPhaseIndex", currentPhaseIndex);
             PlayerPrefs.Save();
         }
 
@@ -95,6 +130,7 @@ namespace VivaParintins.Core
             collectiveCap = PlayerPrefs.GetInt("collectiveCap", 0);
             for (int i = 0; i < phaseStars.Length; i++)
                 phaseStars[i] = PlayerPrefs.GetInt($"phase_{i}", 0);
+            currentPhaseIndex = PlayerPrefs.GetInt("currentPhaseIndex", 0);
         }
 
         // ── Placar nacional ──────────────────────────────────────────────
