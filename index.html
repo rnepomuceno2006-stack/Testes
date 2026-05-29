@@ -94,62 +94,124 @@
   @keyframes spin{to{transform:rotate(360deg)}}
 
   /* ══════════════════════════════════════════════
-     TELA INICIAL ÉPICA
+     TELA INICIAL ÉPICA — BATALHA DOS DOIS BOIS
      ══════════════════════════════════════════════ */
-  #intro{background:transparent;overflow:hidden;}
+  #intro{background:transparent;overflow:hidden;display:flex;align-items:center;justify-content:center;}
   #introBg{position:fixed;inset:0;z-index:-1;overflow:hidden;}
-  /* céu estrelado animado */
   #introBg canvas{position:absolute;inset:0;width:100%;height:100%;}
-  /* divisória — lado vermelho / azul */
+  /* céu vermelho/azul split */
   #introDivide{position:fixed;inset:0;z-index:0;pointer-events:none;
     background:linear-gradient(105deg,
-      rgba(140,10,10,.55) 0%, rgba(60,5,5,.0) 48%,
-      rgba(5,5,60,.0)  52%, rgba(10,10,140,.55) 100%);}
-  /* relâmpagos de fundo */
+      rgba(160,15,15,.65) 0%, rgba(80,5,5,.0) 46%,
+      rgba(5,5,80,.0) 54%, rgba(15,15,180,.65) 100%);}
+  /* linha de batalha central */
+  #introDivide::after{content:'';position:absolute;left:50%;top:5%;bottom:5%;width:2px;transform:translateX(-50%);
+    background:linear-gradient(180deg,transparent,rgba(255,225,80,.7) 20%,rgba(255,225,80,.9) 50%,rgba(255,225,80,.7) 80%,transparent);
+    box-shadow:0 0 18px rgba(255,225,80,.5),0 0 40px rgba(255,225,80,.2);}
   @keyframes lightning{0%,92%,96%,100%{opacity:0}93%,95%{opacity:.7}}
   #introLightning{position:fixed;inset:0;z-index:1;pointer-events:none;
     background:radial-gradient(ellipse at 50% 10%,rgba(255,255,255,.9),transparent 60%);
     animation:lightning 4s ease-in-out infinite;}
 
-  #intro .panel{
-    position:relative;z-index:10;background:rgba(5,8,18,.82);
-    border:1px solid rgba(200,169,110,.5);
-    box-shadow:0 0 60px rgba(0,0,0,.8), 0 0 30px rgba(200,169,110,.12);
-    max-width:620px;
+  /* ── layout principal ── */
+  #introWrap{
+    position:relative;z-index:10;
+    display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:auto auto 1fr auto;
+    width:100%;max-width:900px;min-height:100svh;padding:14px 8px;gap:0;
+    align-items:start;
   }
-  /* título com brilho pulsante */
+  /* cabeçalho ocupa as 3 colunas */
+  #introHead{grid-column:1/-1;text-align:center;padding-bottom:8px;}
   @keyframes titleGlow{0%,100%{text-shadow:0 0 18px rgba(200,169,110,.5),0 0 40px rgba(200,169,110,.2)}
     50%{text-shadow:0 0 30px rgba(255,225,100,.9),0 0 70px rgba(255,200,50,.5),0 0 100px rgba(200,150,10,.3)}}
-  #intro .panel h1{font-size:34px;color:var(--gold-solid);margin:0 0 4px;
-    animation:titleGlow 2.4s ease-in-out infinite;font-family:'Cinzel Decorative',serif;}
-  /* subtítulo — tema 2026 */
-  #introThemes{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0 18px;}
-  .intro-theme{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.5px;}
-  .intro-theme.gar{background:rgba(226,35,26,.18);border:1px solid rgba(226,35,26,.5);color:#ff8080;}
-  .intro-theme.cap{background:rgba(21,101,192,.18);border:1px solid rgba(21,101,192,.5);color:#7ab8ff;}
-  /* countdown festival */
-  #festCountdown{display:flex;justify-content:center;gap:10px;margin:6px 0 14px;flex-wrap:wrap;}
-  .countdown-box{display:flex;flex-direction:column;align-items:center;background:rgba(200,169,110,.12);border:1px solid rgba(200,169,110,.4);border-radius:10px;padding:6px 14px;min-width:52px;}
-  .countdown-num{font-family:'Cinzel Decorative',serif;font-size:26px;font-weight:700;color:var(--gold-solid);line-height:1;animation:cntPulse 1s ease-in-out infinite alternate;}
-  .countdown-lbl{font-size:9px;letter-spacing:2px;opacity:.6;margin-top:2px;text-transform:uppercase;}
+  #introHead h1{font-family:'Cinzel Decorative',serif;font-size:clamp(22px,5vw,38px);
+    color:var(--gold-solid);margin:0 0 2px;animation:titleGlow 2.4s ease-in-out infinite;}
+  #introHead .sub{font-family:'Cinzel',serif;font-size:11px;color:var(--gold-solid);
+    letter-spacing:3px;opacity:.7;margin-bottom:10px;}
+  /* countdown */
+  #festCountdown{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 0 8px;}
+  .countdown-box{display:flex;flex-direction:column;align-items:center;
+    background:rgba(200,169,110,.12);border:1px solid rgba(200,169,110,.4);
+    border-radius:10px;padding:4px 12px;min-width:46px;}
+  .countdown-num{font-family:'Cinzel Decorative',serif;font-size:22px;font-weight:700;
+    color:var(--gold-solid);line-height:1;animation:cntPulse 1s ease-in-out infinite alternate;}
+  .countdown-lbl{font-size:8px;letter-spacing:2px;opacity:.6;margin-top:2px;text-transform:uppercase;}
   @keyframes cntPulse{from{text-shadow:0 0 8px rgba(200,169,110,.3)}to{text-shadow:0 0 18px rgba(200,169,110,.9)}}
-  .countdown-past{color:#ff8080;font-family:'Cinzel Decorative',serif;font-size:14px;letter-spacing:1px;padding:8px;text-align:center;}
+  .countdown-past{color:#ff8080;font-family:'Cinzel Decorative',serif;font-size:13px;letter-spacing:1px;padding:6px;text-align:center;}
   .countdown-today{color:#ffe15a;animation:titleGlow 1.5s ease-in-out infinite alternate;}
-
-  /* cards dos bois — flip 3D */
-  .team-card{perspective:800px;}
-  @keyframes cardFloat{0%,100%{transform:translateY(0) rotateY(-2deg)}50%{transform:translateY(-8px) rotateY(2deg)}}
+  /* VS central */
+  #introVS{
+    grid-column:2;grid-row:3;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:0 10px;gap:8px;
+  }
+  #introVSLabel{font-family:'Cinzel Decorative',serif;font-size:clamp(18px,4vw,28px);
+    color:var(--gold-solid);animation:titleGlow 1.8s ease-in-out infinite;
+    writing-mode:horizontal-tb;}
+  #introVSSwords{font-size:28px;animation:swordPulse 1.4s ease-in-out infinite alternate;}
+  @keyframes swordPulse{0%{transform:scale(1) rotate(-5deg)}100%{transform:scale(1.15) rotate(5deg)}}
+  /* painéis dos bois */
+  .intro-boi-panel{
+    padding:14px 10px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;
+  }
+  .intro-boi-panel.gar{grid-column:1;grid-row:3;}
+  .intro-boi-panel.cap{grid-column:3;grid-row:3;}
+  .ibp-emoji{font-size:clamp(36px,8vw,54px);line-height:1;
+    filter:drop-shadow(0 0 10px currentColor);}
+  .ibp-name{font-family:'Cinzel Decorative',serif;font-size:clamp(13px,3vw,18px);
+    font-weight:700;letter-spacing:.5px;margin:0;}
+  .gar .ibp-name{color:#ff6b6b;}
+  .cap .ibp-name{color:#7ab8ff;}
+  .ibp-sub{font-size:10px;opacity:.55;letter-spacing:1px;text-align:center;}
+  .ibp-tema{font-size:10px;font-style:italic;opacity:.75;text-align:center;
+    padding:4px 8px;border-radius:8px;max-width:160px;}
+  .gar .ibp-tema{background:rgba(226,35,26,.15);border:1px solid rgba(226,35,26,.35);color:#ffaaaa;}
+  .cap .ibp-tema{background:rgba(21,101,192,.15);border:1px solid rgba(21,101,192,.35);color:#aaccff;}
+  /* elenco de itens */
+  .ibp-cast{display:flex;flex-direction:column;gap:4px;width:100%;max-width:190px;}
+  .icast-item{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:7px;
+    font-size:11px;line-height:1.3;cursor:default;}
+  .gar .icast-item{background:rgba(226,35,26,.10);border:1px solid rgba(226,35,26,.2);}
+  .cap .icast-item{background:rgba(21,101,192,.10);border:1px solid rgba(21,101,192,.2);}
+  .icast-name{font-weight:700;color:#f0e8d0;}
+  .icast-role{font-size:9px;opacity:.55;display:block;}
+  .icast-badge{font-size:10px;background:rgba(255,225,80,.18);border:1px solid rgba(255,225,80,.4);
+    border-radius:4px;padding:1px 4px;color:#ffe15a;font-weight:700;white-space:nowrap;}
+  /* botões de escolha (rodapé, ocupa 3 colunas) */
+  #introFooter{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:12px;}
+  #introTeamRow{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;width:100%;}
+  .team-card{flex:1;min-width:140px;max-width:240px;padding:14px 10px;border-radius:14px;
+    cursor:pointer;border:2px solid transparent;text-align:center;transition:transform .15s,box-shadow .15s;}
+  .team-card .big{font-size:34px;line-height:1.1;}
+  .team-card h2{margin:6px 0 3px;font-size:16px;}
+  .team-card.gar{border-color:rgba(255,59,59,.6);}
+  .team-card.cap{border-color:rgba(90,160,255,.6);}
+  .team-card.gar:hover,.team-card.gar:active{box-shadow:0 0 28px rgba(255,59,59,.65);transform:translateY(-3px) scale(1.03);}
+  .team-card.cap:hover,.team-card.cap:active{box-shadow:0 0 28px rgba(90,160,255,.65);transform:translateY(-3px) scale(1.03);}
+  .team-card h2.gar-h{color:var(--gar);}
+  .team-card h2.cap-h{color:#8bbfe8;}
+  .team-card small{opacity:.6;font-size:11px;}
+  @keyframes cardFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
   .team-card.gar{animation:cardFloat 3.2s ease-in-out infinite;}
   .team-card.cap{animation:cardFloat 3.5s ease-in-out infinite .4s;}
   .team-card:active{transform:scale(.96)!important;animation:none!important;}
-
-  /* partículas da intro — canvas sobrepostos */
+  /* partículas da intro */
   .intro-particle{position:fixed;pointer-events:none;z-index:5;font-size:18px;
     animation:introParticle var(--dur,3s) ease-in forwards;}
   @keyframes introParticle{
     0%  {transform:translate(0,0) scale(1) rotate(0deg);opacity:.95}
     60% {opacity:.9}
     100%{transform:translate(var(--tx,0),var(--ty,-300px)) scale(.3) rotate(var(--rot,360deg));opacity:0}
+  }
+  /* responsivo mobile */
+  @media(max-width:600px){
+    #introWrap{grid-template-columns:1fr;grid-template-rows:auto;padding:10px 6px;}
+    .intro-boi-panel.gar{grid-column:1;grid-row:2;}
+    #introVS{grid-column:1;grid-row:3;flex-direction:row;padding:6px 0;}
+    .intro-boi-panel.cap{grid-column:1;grid-row:4;}
+    #introVSLabel{writing-mode:horizontal-tb;font-size:20px;}
+    #introDivide::after{display:none;}
+    .ibp-cast{max-width:100%;}
   }
 
   /* ══════════════════════════════════════════════
@@ -230,20 +292,7 @@
   .overlay .panel{max-width:560px;width:100%;padding:26px;text-align:center;}
   .hidden{display:none !important;}
 
-  #intro .panel h1{font-size:30px;color:var(--gold-solid);margin:0 0 4px;text-shadow:0 0 18px rgba(200,169,110,.5);}
-  #intro .panel p{opacity:.85;line-height:1.4;margin:8px 0 22px;font-size:15px;}
   .team-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
-  .team-card{flex:1;min-width:180px;padding:20px;border-radius:14px;cursor:pointer;border:2px solid transparent;
-    transition:transform .12s, box-shadow .15s;background:rgba(255,255,255,.03);}
-  .team-card .big{font-size:46px;line-height:1;}
-  .team-card.gar{border-color:rgba(255,59,59,.6);}
-  .team-card.cap{border-color:rgba(223,231,242,.55);}
-  .team-card.gar:hover{box-shadow:0 0 24px rgba(255,59,59,.55);transform:translateY(-3px);}
-  .team-card.cap:hover{box-shadow:0 0 24px rgba(223,231,242,.5);transform:translateY(-3px);}
-  .team-card h2{margin:10px 0 4px;font-size:22px;}
-  .team-card.gar h2{color:var(--gar);}
-  .team-card.cap h2{color:#bcd0ee;}
-  .team-card small{opacity:.7;}
 
   #hud{position:fixed;inset:0;pointer-events:none;z-index:20;}
   #hud .tl{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:8px;}
@@ -456,40 +505,128 @@
 <div id="introLightning"></div>
 
 <div id="intro" class="overlay hidden">
-  <div class="panel glass">
+<div id="introWrap">
+
+  <!-- CABEÇALHO — título + countdown -->
+  <div id="introHead">
     <h1>🐂 BOI IMPACT</h1>
-    <p style="font-family:'Cinzel',serif;font-size:13px;color:var(--gold-solid);margin:2px 0 10px;letter-spacing:2px;">LENDAS DE PARINTINS</p>
+    <div class="sub">LENDAS DE PARINTINS · FESTIVAL 2026</div>
     <div id="festCountdown"></div>
-    <div id="introThemes">
-      <span class="intro-theme gar">❤️ "Portal do Encantamento"</span>
-      <span class="intro-theme cap">⭐ "Brinquedo que Canta seu Chão"</span>
-    </div>
-    <p style="opacity:.85;line-height:1.5;margin:0 0 18px;font-size:15px;">
-      Os bois perderam seus objetos sagrados! Escolha seu boi, recupere os quesitos e leve a galera ao título nas <b>3 noites do Festival de Parintins 2026</b>.
-    </p>
-    <div class="team-row">
-      <div class="team-card gar" data-team="gar">
-        <div class="big">&#10084;&#65039;</div>
-        <h2>Boi Garantido</h2>
-        <small>O Boi do Povão — Baixa de São José</small>
-        <small style="display:block;margin-top:4px;color:#ff8080;font-size:11px">⚔️ Fundado em 1913 · 🏆 CAMPEÃO 2026</small>
-        <small style="display:block;margin-top:3px;color:#ffe15a;font-size:10px;font-weight:700">✦ Isabelle Nogueira · David Assayag</small>
+  </div>
+
+  <!-- PAINEL ESQUERDO — GARANTIDO -->
+  <div class="intro-boi-panel gar">
+    <div class="ibp-emoji">🐂❤️</div>
+    <p class="ibp-name">BOI GARANTIDO</p>
+    <p class="ibp-sub">O Boi do Povão · Baixa de São José · Fund. 1913</p>
+    <div class="ibp-tema">"Portal do Encantamento"</div>
+    <div class="ibp-cast">
+      <div class="icast-item">
+        <span>💃</span>
+        <span><span class="icast-name">Isabelle Nogueira</span> <span class="icast-badge">BBB24</span><br><span class="icast-role">Cunhã-Poranga</span></span>
       </div>
-      <div class="team-card cap" data-team="cap">
-        <div class="big">&#11088;</div>
-        <h2>Boi Caprichoso</h2>
-        <small>O Boi de Parintins — A Francesa</small>
-        <small style="display:block;margin-top:4px;color:#7ab8ff;font-size:11px">⚔️ Fundado em 1913</small>
-        <small style="display:block;margin-top:3px;color:#ffe15a;font-size:10px;font-weight:700">✦ Erick Beltrão · Patrick Araujo</small>
+      <div class="icast-item">
+        <span>🎤</span>
+        <span><span class="icast-name">David Assayag</span><br><span class="icast-role">Levantador de Toadas</span></span>
       </div>
-    </div>
-    <p style="margin-top:14px;font-size:12px;opacity:.5">WASD/setas · mouse · E para interagir · J diário · Esc pausa</p>
-    <div class="row" style="margin-top:10px;">
-      <button class="btn" id="btnFestival" style="font-size:16px;padding:14px 22px;background:linear-gradient(180deg,#c8a96e,#7a5c20);color:#1a1000;border-color:#ffe15a;">
-        🎪 MODO FESTIVAL — Mapa de Fases
-      </button>
+      <div class="icast-item">
+        <span>🪶</span>
+        <span><span class="icast-name">Adriano Paketá</span><br><span class="icast-role">Pajé</span></span>
+      </div>
+      <div class="icast-item">
+        <span>👑</span>
+        <span><span class="icast-name">Lívia Cristina</span><br><span class="icast-role">Rainha do Folclore</span></span>
+      </div>
+      <div class="icast-item">
+        <span>🤠</span>
+        <span><span class="icast-name">João Paulo Faria</span><br><span class="icast-role">Amo do Boi</span></span>
+      </div>
+      <div class="icast-item">
+        <span>🎙️</span>
+        <span><span class="icast-name">Israel Paulain</span><br><span class="icast-role">Apresentador</span></span>
+      </div>
+      <div class="icast-item">
+        <span>👸</span>
+        <span><span class="icast-name">Raíra Lins</span><br><span class="icast-role">Sinhazinha da Fazenda</span></span>
+      </div>
+      <div class="icast-item">
+        <span>🚩</span>
+        <span><span class="icast-name">Jeveny Mendonça</span><br><span class="icast-role">Porta-Estandarte</span></span>
+      </div>
     </div>
   </div>
+
+  <!-- CENTRO — VS -->
+  <div id="introVS">
+    <div id="introVSSwords">⚔️</div>
+    <div id="introVSLabel">VS</div>
+    <div id="introVSSwords">⚔️</div>
+  </div>
+
+  <!-- PAINEL DIREITO — CAPRICHOSO -->
+  <div class="intro-boi-panel cap">
+    <div class="ibp-emoji">🐃⭐</div>
+    <p class="ibp-name">BOI CAPRICHOSO</p>
+    <p class="ibp-sub">O Boi de Parintins · A Francesa · Fund. 1913</p>
+    <div class="ibp-tema">"Brinquedo que Canta seu Chão"</div>
+    <div class="ibp-cast">
+      <div class="icast-item">
+        <span>🎤</span>
+        <span><span class="icast-name">Patrick Araujo</span><br><span class="icast-role">Levantador de Toadas</span></span>
+      </div>
+      <div class="icast-item">
+        <span>🌙</span>
+        <span><span class="icast-name">Erick Beltrão</span><br><span class="icast-role">Pajé</span></span>
+      </div>
+      <div class="icast-item">
+        <span>🦜</span>
+        <span><span class="icast-name">Marcyele Albuquerque</span><br><span class="icast-role">Cunhã-Poranga</span></span>
+      </div>
+      <div class="icast-item">
+        <span>👑</span>
+        <span><span class="icast-name">Cleise Simas</span><br><span class="icast-role">Rainha do Folclore</span></span>
+      </div>
+      <div class="icast-item">
+        <span>🤠</span>
+        <span><span class="icast-name">Amo do Caprichoso</span><br><span class="icast-role">Amo do Boi</span></span>
+      </div>
+      <div class="icast-item">
+        <span>🎙️</span>
+        <span><span class="icast-name">Edmundo Oran</span><br><span class="icast-role">Apresentador</span></span>
+      </div>
+      <div class="icast-item">
+        <span>👸</span>
+        <span><span class="icast-name">Valentina Cid</span><br><span class="icast-role">Sinhazinha da Fazenda</span></span>
+      </div>
+      <div class="icast-item">
+        <span>🚩</span>
+        <span><span class="icast-name">Marcela Marialva</span><br><span class="icast-role">Porta-Estandarte</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RODAPÉ — escolha + festival -->
+  <div id="introFooter">
+    <p style="font-size:13px;opacity:.7;margin:0;text-align:center;">Escolha seu boi e entre no Festival de Parintins 2026 — <b>3 noites épicas de disputa!</b></p>
+    <div id="introTeamRow">
+      <div class="team-card gar" data-team="gar">
+        <div class="big">❤️</div>
+        <h2 class="gar-h">Boi Garantido</h2>
+        <small>Toque para jogar pelo vermelho</small>
+      </div>
+      <div class="team-card cap" data-team="cap">
+        <div class="big">⭐</div>
+        <h2 class="cap-h">Boi Caprichoso</h2>
+        <small>Toque para jogar pelo azul</small>
+      </div>
+    </div>
+    <button class="btn" id="btnFestival" style="font-size:15px;padding:12px 24px;background:linear-gradient(180deg,#c8a96e,#7a5c20);color:#1a1000;border-color:#ffe15a;width:100%;max-width:360px;">
+      🎪 MODO FESTIVAL — Mapa de Fases
+    </button>
+    <p style="font-size:11px;opacity:.35;margin:0">WASD/setas · mouse · E interagir · J diário · Esc pausa</p>
+  </div>
+
+</div>
 </div>
 
 <!-- ===== MODO FESTIVAL — MAPA DE FASES (estilo Mario) ===== -->
@@ -2476,7 +2613,7 @@ const ROSTER = [
     id:'gar_boi', team:'gar', role:'Boi-Bumbá', name:'Boi Garantido',
     realName:'Tripa: Denison Piçanã', emoji:'🐂', stars:3,
     hp:100, mp:60, en:80, hr:90, glow:'rgba(226,35,26,.7)',
-    lore:'O Boi Vermelho da Baixa de São José! Fundado em 1913 por Lindolfo Monteverde. Denison Piçanã é a tripa — o coração que pulsa dentro do boi. Garantidada! CAMPEÃO 2026!'
+    lore:'O Boi Vermelho da Baixa de São José! Fundado em 1913 por Lindolfo Monteverde. Denison Piçanã é a tripa — o coração que pulsa dentro do boi. Garantidada! O Boi do Povão vai buscar o título em 2026!'
   },
   { id:'gar_paje',      team:'gar', role:'Pajé',                  name:'Pajé do Garantido',         realName:'Adriano Paketá',              emoji:'🪶', stars:3, hp:80,mp:95,en:75,hr:70, glow:'rgba(180,90,10,.9)',  lore:'Adriano Paketá — o Pajé Item 12 do Garantido 2026. Pintura de onça, penas e cajado ritual. Sua dança xamânica invoca os espíritos da floresta e ressuscita o boi nas três noites sagradas.' },
   { id:'gar_cunha',     team:'gar', role:'Cunhã Poranga',          name:'Cunhã Poranga',             realName:'Isabelle Nogueira',           emoji:'💃', stars:3, hp:70,mp:80,en:65,hr:95, glow:'rgba(226,35,26,.8)', lore:'Isabelle Nogueira — ex-BBB24, finalista nacional, filha de Parintins! Voltou à sua raiz como Cunhã-Poranga do Garantido 2026. "Cunhã-Poranga" = Mulher Bonita em Tupi. A arena explodiu!' },
@@ -3298,7 +3435,7 @@ function initCountdown(){
   function tick(){
     const now=new Date();
     if(now>festEnd){
-      el.innerHTML='<div class="countdown-past">🏆 Festival 2026 concluído! Garantidada Campeã!</div>';
+      el.innerHTML='<div class="countdown-past">🏆 Festival de Parintins 2026 encerrado! Obrigado a todos os brincantes!</div>';
       return;
     }
     if(now>=festStart){
