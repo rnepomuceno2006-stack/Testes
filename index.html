@@ -225,6 +225,25 @@
   .luma-star{position:absolute;font-size:20px;animation:floatStar 2.2s ease-in-out infinite, pulseStar 1.1s ease-in-out infinite;}
   .luma-cap{animation:floatStar 2.2s ease-in-out infinite, pulseStar 1.1s ease-in-out infinite;}
   .luma-gar{animation:floatStar 2.2s ease-in-out infinite, pulseHeart 1.1s ease-in-out infinite;}
+
+  /* ===== Luma HUD pill — pulsa dourado ===== */
+  #lumaPill .val{color:#ffe15a;font-weight:700;}
+  @keyframes lumaPop{0%{transform:scale(1)}40%{transform:scale(1.35);filter:drop-shadow(0 0 8px #ffe15a)}100%{transform:scale(1)}}
+  #lumaPill.pop{animation:lumaPop .4s ease-out;}
+
+  /* ===== Cabo-de-guerra (votação ao vivo) ===== */
+  #tugWrap{margin:14px 0;}
+  #tugBar{position:relative;height:38px;border-radius:20px;overflow:hidden;border:2px solid var(--gold);background:#111;display:flex;}
+  .tug-side{height:100%;transition:width .25s cubic-bezier(.5,0,.5,1);}
+  .tug-side.gar{background:linear-gradient(90deg,#ff5252,#b71c1c);width:50%;}
+  .tug-side.cap{background:linear-gradient(90deg,#1565c0,#5aa0ff);width:50%;}
+  #tugMid{position:absolute;top:-4px;bottom:-4px;left:50%;width:4px;background:#ffe15a;box-shadow:0 0 12px #ffe15a;transition:left .25s;transform:translateX(-50%);}
+  #tugLabels{display:flex;justify-content:space-between;margin-top:8px;font-weight:700;font-size:14px;}
+  #tugLabels .gar{color:#ff6b6b;} #tugLabels .cap{color:#7ab8ff;}
+  #lvTimer{font-size:22px;text-align:center;margin:10px 0;color:var(--gold-solid);}
+  #lvTap{font-size:22px;padding:18px 24px;width:100%;background:linear-gradient(180deg,#c8a96e,#8a6830);color:#1a1000;border:2px solid #ffe15a;animation:tapPulse 1s ease-in-out infinite;}
+  @keyframes tapPulse{0%,100%{box-shadow:0 0 0 rgba(255,225,90,0)}50%{box-shadow:0 0 26px rgba(255,225,90,.7)}}
+  #lvTap:active{transform:scale(.96);}
 </style>
 </head>
 <body>
@@ -264,6 +283,7 @@
   <div class="tl">
     <div class="pill glass"><span class="lab">Noite</span> <span id="nightVal">1</span> / 3</div>
     <div id="wallet" class="pill glass"><span class="lab" id="walletLab">Corações</span> <span class="val" id="walletVal">0</span></div>
+    <div id="lumaPill" class="pill glass"><span class="lab">✦ Luma</span> <span class="val" id="lumaVal">0</span></div>
   </div>
   <div class="tr">
     <div id="scoreBar">
@@ -323,7 +343,36 @@
     <h2 class="bigtitle" id="fTitle">Campeão!</h2>
     <p id="fText" style="opacity:.9;font-size:17px"></p>
     <div class="vs"><span class="s gar" id="fGar">0</span><span class="x">&times;</span><span class="s cap" id="fCap">0</span></div>
-    <div class="row"><button class="btn" id="fRestart">Jogar de Novo</button></div>
+    <div class="row">
+      <button class="btn" id="fShare">📲 Compartilhar Resultado</button>
+      <button class="btn" id="fRestart">Jogar de Novo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== VOTAÇÃO AO VIVO — NOITE 3 (mecânica viral cabo-de-guerra) ===== -->
+<div id="liveVote" class="overlay hidden">
+  <div class="panel glass" style="max-width:560px;">
+    <h2 class="bigtitle cinzel" id="lvTitle">🔥 GRANDE CONFRONTO — NOITE 3</h2>
+    <p style="opacity:.85;margin:4px 0 12px">A arena está dividida! Cada toque é um grito da galera. Puxe a corda para o seu boi!</p>
+    <div id="tugWrap">
+      <div id="tugBar">
+        <div id="tugGar" class="tug-side gar"></div>
+        <div id="tugCap" class="tug-side cap"></div>
+        <div id="tugMid"></div>
+      </div>
+      <div id="tugLabels">
+        <span class="gar">❤️ GARANTIDO <b id="tugGarPct">50%</b></span>
+        <span class="cap">⭐ CAPRICHOSO <b id="tugCapPct">50%</b></span>
+      </div>
+    </div>
+    <div id="lvTimer" class="cinzel">⏱️ <span id="lvSecs">20</span>s</div>
+    <button id="lvTap" class="btn">🥁 GRITAR PELO MEU BOI! 🥁</button>
+    <p style="font-size:12px;opacity:.6;margin-top:10px">Toque rápido! A torcida nacional também está votando em tempo real.</p>
+    <div class="row" style="display:none" id="lvResultRow">
+      <button class="btn" id="lvShare">📲 Compartilhar</button>
+      <button class="btn" id="lvContinue">Continuar</button>
+    </div>
   </div>
 </div>
 
@@ -364,7 +413,7 @@
     </div>
     <div id="cardLore" class="card-lore glass"></div>
     <div id="cardBtns" class="card-btns">
-      <button class="btn card-btn" id="cardLuma">✦ LUMA</button>
+      <button class="btn card-btn" id="cardShare">📲 COMPARTILHAR</button>
       <button class="btn card-btn" id="cardMenu">MENU</button>
       <button class="btn card-btn gold-btn" id="cardFav">★ FAVORITO</button>
     </div>
@@ -1258,21 +1307,39 @@ class LumaSpirits {
   }
   // segue suavemente o jogador para sempre ter espíritos por perto
   follow(pos){ this._target=pos; }
+  // callback quando o jogador coleta um Luma
+  onCollect(fn){ this._onCollect=fn; }
+  // reposiciona um Luma coletado longe, para reaparecer (respawn)
+  _respawn(sp){
+    const ang=Math.random()*Math.PI*2, rad=30+Math.random()*40;
+    const c = this._target||{x:0,y:0,z:0};
+    sp.position.set(c.x+Math.cos(ang)*rad, 1.5+Math.random()*4, c.z+Math.sin(ang)*rad);
+    sp.userData.baseY=sp.position.y; sp.visible=true; sp.userData.collected=false;
+  }
   update(dt){
     this.t+=dt;
     for(const sp of this.spirits){
       const u=sp.userData;
+      if(u.collected) continue;
       // bob vertical + pulso de escala (pulsar) + giro
       sp.position.y = u.baseY + Math.sin(this.t*1.6 + u.phase)*u.bobAmp;
       const pulse = 1 + Math.sin(this.t*3 + u.phase)*0.22;
       sp.scale.setScalar(u.baseScale*pulse);
       sp.material.opacity = 0.65 + Math.sin(this.t*3 + u.phase)*0.3;
       sp.material.rotation += dt*u.spin;
-      // deriva lenta orbital em torno do alvo (jogador), se houver
+      // COLETA: jogador encostou? recolhe, dá Luma e respawna
       if(this._target){
-        const dx=this._target.x-sp.position.x, dz=this._target.z-sp.position.z;
-        const d=Math.hypot(dx,dz);
-        if(d>70){ sp.position.x+=dx*0.004; sp.position.z+=dz*0.004; u.baseY=this._target.y+1+Math.random()*4; }
+        const dx=this._target.x-sp.position.x, dy=this._target.y+1-sp.position.y, dz=this._target.z-sp.position.z;
+        const d=Math.sqrt(dx*dx+dy*dy+dz*dz);
+        if(d<2.0){
+          u.collected=true; sp.visible=false;
+          if(this._onCollect) this._onCollect(sp.position.clone());
+          setTimeout(()=>this._respawn(sp), 8000+Math.random()*6000);
+          continue;
+        }
+        // deriva lenta orbital em torno do jogador
+        const dh=Math.hypot(dx,dz);
+        if(dh>70){ sp.position.x+=dx*0.004; sp.position.z+=dz*0.004; u.baseY=this._target.y+1+Math.random()*4; }
       }
     }
   }
@@ -1641,6 +1708,7 @@ class Game {
     $('pauseLogBtn').onclick=()=>{ this.togglePause(false); this.toggleLog(true); };
     $('neNext').onclick=()=>this.nextNight();
     $('fRestart').onclick=()=>location.reload();
+    $('fShare').onclick=()=>this._shareResult();
     $('dialogue').addEventListener('click',()=>this.ui.advanceDialogue());
     this._setupTouch();
   }
@@ -1673,6 +1741,17 @@ class Game {
     this.renderer.outline.selectedObjects.push(this.player.group);
     // Espíritos Luma da Amazônia — estrelas (Caprichoso) / corações (Garantido)
     this.lumas=new LumaSpirits(this.renderer.scene, teamKey);
+    this.lumaCoins=parseInt(localStorage.getItem('boi_luma')||'0',10)||0;
+    $('lumaVal').textContent=this.lumaCoins;
+    this.lumas.onCollect((pos)=>{
+      this.lumaCoins++;
+      localStorage.setItem('boi_luma',this.lumaCoins);
+      $('lumaVal').textContent=this.lumaCoins;
+      const pill=$('lumaPill'); pill.classList.remove('pop'); void pill.offsetWidth; pill.classList.add('pop');
+      this.particles.burst(pos,'pickup');
+      this.audio.pickup();
+      if(this.lumaCoins%10===0) this.ui.toast(`✦ ${this.lumaCoins} Lumas! Espíritos da Amazônia te seguem.`);
+    });
     this.buildContent();
     this.wallet=parseInt(localStorage.getItem(TEAM[teamKey].wallet)||'0',10)||0;
     this.ui.showHUD(); this.ui.setNight(this.night); this.ui.setWallet(teamKey,this.wallet); this.ui.setScores(0,0);
@@ -1787,7 +1866,7 @@ class Game {
     this.score[rival]+=10+Math.random()*10;
     this.score[this.team]+=6+Math.random()*6;
     this.ui.setScores(this.score.gar,this.score.cap);
-    if(this.night>=this.maxNight){ this._showFinal(); return; }
+    if(this.night>=this.maxNight){ this._startLiveVote(); return; }
     this.state='nightEnd';
     $('neTitle').textContent=`Fim da Noite ${this.night}`;
     $('neText').textContent=`Você recuperou os quesitos da noite ${this.night}! A galera vibra nas arquibancadas. Placar parcial:`;
@@ -1815,6 +1894,121 @@ class Game {
     $('final').classList.remove('hidden');
     this.audio.win();
     if(won && !this._confettiTimer) this._confettiTimer=setInterval(()=>this.particles.burst(this.player.pos.clone(),'confetti'),700);
+  }
+
+  /* ===== VOTAÇÃO AO VIVO — Noite 3 (cabo-de-guerra viral) ===== */
+  _startLiveVote(){
+    this.state='menu';
+    const me=this.team, rival=me==='gar'?'cap':'gar';
+    // pontos da torcida — começa do placar acumulado, normalizado
+    this._vote={ gar:Math.max(40,this.score.gar), cap:Math.max(40,this.score.cap), secs:20, ended:false };
+    $('lvResultRow').style.display='none';
+    $('lvTap').style.display='';
+    $('lvTimer').style.display='';
+    $('liveVote').classList.remove('hidden');
+    this._updateTug();
+    // tap do jogador = +votos pro seu boi
+    $('lvTap').onclick=()=>{
+      if(this._vote.ended) return;
+      this._vote[me]+=3;
+      this.audio.pickup();
+      const pill=$('lvTap'); pill.style.transform='scale(.94)'; setTimeout(()=>pill.style.transform='',80);
+      this._updateTug();
+    };
+    // torcida nacional (CPU) vota em tempo real
+    clearInterval(this._voteTimer);
+    this._voteTimer=setInterval(()=>{
+      if(this._vote.ended) return;
+      // ambos os bois recebem votos da galera nacional; leve vantagem para quem o jogador apoia
+      this._vote.gar += Math.random()*2.4 + (me==='gar'?0.6:0);
+      this._vote.cap += Math.random()*2.4 + (me==='cap'?0.6:0);
+      this._updateTug();
+    }, 350);
+    clearInterval(this._voteCountdown);
+    this._voteCountdown=setInterval(()=>{
+      this._vote.secs--;
+      $('lvSecs').textContent=Math.max(0,this._vote.secs);
+      if(this._vote.secs<=0) this._endLiveVote();
+    },1000);
+  }
+  _updateTug(){
+    const g=this._vote.gar, c=this._vote.cap, tot=g+c;
+    const gp=Math.round(g/tot*100), cp=100-gp;
+    $('tugGar').style.width=gp+'%'; $('tugCap').style.width=cp+'%';
+    $('tugMid').style.left=gp+'%';
+    $('tugGarPct').textContent=gp+'%'; $('tugCapPct').textContent=cp+'%';
+  }
+  _endLiveVote(){
+    this._vote.ended=true;
+    clearInterval(this._voteTimer); clearInterval(this._voteCountdown);
+    $('lvTap').style.display='none'; $('lvTimer').style.display='none';
+    $('lvResultRow').style.display='';
+    // transfere o resultado da votação para o placar final
+    this.score.gar=this._vote.gar; this.score.cap=this._vote.cap;
+    this.audio.win();
+    const g=this._vote.gar,c=this._vote.cap;
+    const winner = g>=c?'gar':'cap';
+    $('lvTitle').textContent = winner===this.team ? '🏆 SUA GALERA VENCEU O CONFRONTO!' : '🔥 CONFRONTO ENCERRADO!';
+    $('lvShare').onclick=()=>this._shareResult();
+    $('lvContinue').onclick=()=>{ $('liveVote').classList.add('hidden'); this._showFinal(); };
+  }
+
+  /* ===== COMPARTILHAR RESULTADO / CARD (Web Share API + canvas) ===== */
+  async _shareResult(){
+    const g=Math.floor(this.score.gar), c=Math.floor(this.score.cap);
+    const meName=TEAM[this.team].name;
+    const win = (this.team==='gar'?g>=c:c>=g);
+    const txt = `🐂 BOI IMPACT — Lendas de Parintins\n`+
+      `${win?'🏆 Joguei pelo '+meName+' e VENCI o Confronto!':'Joguei pelo '+meName+' no Festival!'}\n`+
+      `❤️ Garantido ${g}  ×  ${c} Caprichoso ⭐\n`+
+      `Qual é o seu boi? Joga e defende a sua galera! 🔴🔵`;
+    const url=location.href.split('?')[0];
+    await this._share(txt, url, `card-${this.team}.png`, this._buildResultCard(g,c,win));
+  }
+  // gera card PNG do resultado/personagem
+  _buildResultCard(g,c,win){
+    const cv=document.createElement('canvas'); cv.width=1080; cv.height=1080;
+    const x=cv.getContext('2d');
+    const grd=x.createLinearGradient(0,0,1080,1080);
+    grd.addColorStop(0,'#0a0d18'); grd.addColorStop(.5,'#16203c'); grd.addColorStop(1,'#0a0d18');
+    x.fillStyle=grd; x.fillRect(0,0,1080,1080);
+    // metade vermelha / metade azul
+    x.fillStyle='rgba(226,35,26,.25)'; x.fillRect(0,0,540,1080);
+    x.fillStyle='rgba(21,101,192,.30)'; x.fillRect(540,0,540,1080);
+    x.textAlign='center'; x.fillStyle='#ffe15a';
+    x.font='bold 70px Georgia'; x.fillText('BOI IMPACT', 540, 130);
+    x.font='40px Georgia'; x.fillStyle='#fff'; x.fillText('Lendas de Parintins', 540, 190);
+    // placar
+    x.font='bold 180px Georgia';
+    x.fillStyle='#ff6b6b'; x.textAlign='right'; x.fillText(g, 480, 620);
+    x.fillStyle='#fff'; x.textAlign='center'; x.font='bold 90px Georgia'; x.fillText('×', 540, 600);
+    x.fillStyle='#7ab8ff'; x.textAlign='left'; x.font='bold 180px Georgia'; x.fillText(c, 600, 620);
+    x.textAlign='center'; x.font='bold 44px Georgia'; x.fillStyle='#ff6b6b'; x.fillText('❤️ GARANTIDO', 270, 700);
+    x.fillStyle='#7ab8ff'; x.fillText('⭐ CAPRICHOSO', 810, 700);
+    // chamada
+    x.fillStyle='#ffe15a'; x.font='bold 56px Georgia';
+    x.fillText(win?`🏆 ${TEAM[this.team].name} CAMPEÃO!`:`VAI, ${TEAM[this.team].name}!`, 540, 860);
+    x.fillStyle='#fff'; x.font='38px Georgia';
+    x.fillText('Qual é o SEU boi? Jogue e defenda!', 540, 950);
+    return cv;
+  }
+  // compartilha texto+imagem; cai para download/clipboard se share indisponível
+  async _share(text, url, filename, canvas){
+    try{
+      if(canvas && navigator.canShare){
+        const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
+        const file=new File([blob],filename,{type:'image/png'});
+        if(navigator.canShare({files:[file]})){
+          await navigator.share({text,url,files:[file]}); return;
+        }
+      }
+      if(navigator.share){ await navigator.share({text,url}); return; }
+      await navigator.clipboard.writeText(text+'\n'+url);
+      this.ui.toast('Texto copiado! Cole no WhatsApp 📲');
+    }catch(e){
+      // fallback: baixa o card
+      if(canvas){ const a=document.createElement('a'); a.href=canvas.toDataURL('image/png'); a.download=filename; a.click(); }
+    }
   }
 
   _loop(){
@@ -2155,6 +2349,73 @@ const Gallery = {
     $('gallery').classList.remove('hidden');
   },
 
+  // ===== compartilhar card de personagem favorito =====
+  async shareCharacter(c){
+    const teamName = c.team==='gar'?'Garantido':'Caprichoso';
+    const sym = c.team==='gar'?'❤️':'⭐';
+    const txt = `${sym} ${c.name} — ${c.role}\n`+
+      `${c.realName} | Boi ${teamName}\n`+
+      `🐂 Força ${c.hp}  🪶 Encanto ${c.mp}  🥁 Toada ${c.en}  ${sym} Paixão ${c.hr}\n`+
+      `🎮 BOI IMPACT — Lendas de Parintins. Qual é o seu boi?`;
+    const cv=this.buildCharCard(c);
+    const url=location.href.split('?')[0];
+    try{
+      if(navigator.canShare){
+        const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
+        const file=new File([blob],`${c.id}.png`,{type:'image/png'});
+        if(navigator.canShare({files:[file]})){ await navigator.share({text:txt,url,files:[file]}); return; }
+      }
+      if(navigator.share){ await navigator.share({text:txt,url}); return; }
+      await navigator.clipboard.writeText(txt+'\n'+url);
+      if(typeof game!=='undefined'&&game.ui) game.ui.toast('Card copiado! Cole no WhatsApp 📲');
+    }catch(e){
+      const a=document.createElement('a'); a.href=cv.toDataURL('image/png'); a.download=`${c.id}.png`; a.click();
+    }
+  },
+  buildCharCard(c){
+    const cv=document.createElement('canvas'); cv.width=1080; cv.height=1350;
+    const x=cv.getContext('2d');
+    const isGar=c.team==='gar';
+    const g=x.createLinearGradient(0,0,0,1350);
+    g.addColorStop(0, isGar?'#2a0808':'#06122a');
+    g.addColorStop(.5,'#0a0d18');
+    g.addColorStop(1, isGar?'#1a0404':'#03081a');
+    x.fillStyle=g; x.fillRect(0,0,1080,1350);
+    // moldura dourada
+    x.strokeStyle='#c8a96e'; x.lineWidth=12; x.strokeRect(30,30,1020,1290);
+    x.textAlign='center';
+    // role
+    x.fillStyle='#c8a96e'; x.font='bold 46px Georgia';
+    x.fillText(c.role.toUpperCase(), 540, 150);
+    // emoji gigante
+    x.font='340px serif'; x.fillText(c.emoji, 540, 620);
+    // nome
+    x.fillStyle='#ffe88a'; x.font='bold 78px Georgia'; x.fillText(c.name, 540, 760);
+    x.fillStyle='#fff'; x.font='italic 50px Georgia'; x.fillText(c.realName, 540, 835);
+    // stats
+    const sym=isGar?'❤️':'⭐';
+    x.font='44px Georgia'; x.fillStyle='#ffe15a';
+    x.fillText(`🐂 ${c.hp}    🪶 ${c.mp}    🥁 ${c.en}    ${sym} ${c.hr}`, 540, 950);
+    // lore
+    x.fillStyle='#dfe7f2'; x.font='34px Georgia';
+    this._wrapText(x, c.lore, 540, 1030, 920, 44);
+    // rodapé
+    x.fillStyle=isGar?'#ff6b6b':'#7ab8ff'; x.font='bold 50px Georgia';
+    x.fillText(`${sym} BOI ${isGar?'GARANTIDO':'CAPRICHOSO'}`, 540, 1240);
+    x.fillStyle='#c8a96e'; x.font='36px Georgia';
+    x.fillText('BOI IMPACT — Lendas de Parintins', 540, 1295);
+    return cv;
+  },
+  _wrapText(x, text, cx, cy, maxW, lh){
+    const words=text.split(' '); let line='', y=cy, n=0;
+    for(const w of words){
+      const test=line+w+' ';
+      if(x.measureText(test).width>maxW && line){ x.fillText(line,cx,y); line=w+' '; y+=lh; if(++n>3){x.fillText(line+'…',cx,y);return;} }
+      else line=test;
+    }
+    x.fillText(line,cx,y);
+  },
+
   toggleFav(id){
     if(this.favs.has(id)) this.favs.delete(id);
     else this.favs.add(id);
@@ -2178,10 +2439,9 @@ const Gallery = {
     $('cardNext').addEventListener('click',()=>{
       this.openCard(this.currentIdx+1);
     });
-    $('cardLuma').addEventListener('click',()=>{
+    $('cardShare').addEventListener('click',()=>{
       const c=this.filtered()[this.currentIdx];
-      // Luma: moeda premium — placeholder toast
-      if(typeof game!=='undefined'&&game.ui) game.ui.toast(`✦ Luma gasta em ${c.name}!`);
+      this.shareCharacter(c);
     });
     document.querySelectorAll('.gtab').forEach(b=>{
       b.addEventListener('click',()=>{
