@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>Boi Impact — Lendas de Parintins (3D)</title>
+<title>Viva Parintins!!!</title>
 <link rel="manifest" href="./manifest.webmanifest" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -494,7 +494,7 @@
 <div id="app"></div>
 
 <div id="loading">
-  <h1>Boi Impact<br/>Lendas de Parintins</h1>
+  <h1>Viva Parintins!!!</h1>
   <div class="spinner"></div>
   <div class="sub" id="loadMsg">Carregando o mapa real de Parintins&hellip;</div>
   <div class="sub" id="loadSub" style="font-size:13px;opacity:.55">Buscando dados geográficos (OpenStreetMap)</div>
@@ -509,8 +509,8 @@
 
   <!-- CABEÇALHO — título + countdown -->
   <div id="introHead">
-    <h1>🐂 BOI IMPACT</h1>
-    <div class="sub">LENDAS DE PARINTINS · FESTIVAL 2026</div>
+    <h1>🐂 VIVA PARINTINS!!!</h1>
+    <div class="sub">FESTIVAL FOLCLÓRICO DE PARINTINS 2026</div>
     <div id="festCountdown"></div>
   </div>
 
@@ -783,7 +783,7 @@
 <div id="gallery" class="overlay hidden">
   <div id="galleryInner">
     <div id="galleryHeader">
-      <h2 class="cinzel" id="galleryTitle">Lendas de Parintins</h2>
+      <h2 class="cinzel" id="galleryTitle">Viva Parintins!!!</h2>
       <div id="galleryTabs">
         <button class="gtab active" data-team="all">Todos</button>
         <button class="gtab gar-tab" data-team="gar">❤️ Garantido</button>
@@ -856,7 +856,7 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 /* =====================================================================
-   Boi Impact — Lendas de Parintins (3D exploration adventure)
+   Viva Parintins!!! — Festival Folclórico de Parintins 2026
    Zelda/Genshin-style fetch-quest game set in Parintins-AM.
    Single-file PWA, Three.js r160. Classes documented below.
    ===================================================================== */
@@ -2443,7 +2443,7 @@ class Game {
     const g=Math.floor(this.score.gar), c=Math.floor(this.score.cap);
     const meName=TEAM[this.team].name;
     const win = (this.team==='gar'?g>=c:c>=g);
-    const txt = `🐂 BOI IMPACT — Lendas de Parintins\n`+
+    const txt = `🐂 VIVA PARINTINS!!!\n`+
       `${win?'🏆 Joguei pelo '+meName+' e VENCI o Confronto!':'Joguei pelo '+meName+' no Festival!'}\n`+
       `❤️ Garantido ${g}  ×  ${c} Caprichoso ⭐\n`+
       `Qual é o seu boi? Joga e defende a sua galera! 🔴🔵`;
@@ -2461,8 +2461,8 @@ class Game {
     x.fillStyle='rgba(226,35,26,.25)'; x.fillRect(0,0,540,1080);
     x.fillStyle='rgba(21,101,192,.30)'; x.fillRect(540,0,540,1080);
     x.textAlign='center'; x.fillStyle='#ffe15a';
-    x.font='bold 70px Georgia'; x.fillText('BOI IMPACT', 540, 130);
-    x.font='40px Georgia'; x.fillStyle='#fff'; x.fillText('Lendas de Parintins', 540, 190);
+    x.font='bold 62px Georgia'; x.fillText('VIVA PARINTINS!!!', 540, 130);
+    x.font='40px Georgia'; x.fillStyle='#fff'; x.fillText('Festival Folclórico de Parintins', 540, 190);
     // placar
     x.font='bold 180px Georgia';
     x.fillStyle='#ff6b6b'; x.textAlign='right'; x.fillText(g, 480, 620);
@@ -2760,7 +2760,7 @@ const Gallery = {
     const txt = `${sym} ${c.name} — ${c.role}\n`+
       `${c.realName} | Boi ${teamName}\n`+
       `🐂 Força ${c.hp}  🪶 Encanto ${c.mp}  🥁 Toada ${c.en}  ${sym} Paixão ${c.hr}\n`+
-      `🎮 BOI IMPACT — Lendas de Parintins. Qual é o seu boi?`;
+      `🎮 VIVA PARINTINS!!! Qual é o seu boi?`;
     const cv=this.buildCharCard(c);
     const url=location.href.split('?')[0];
     try{
@@ -2807,7 +2807,7 @@ const Gallery = {
     x.fillStyle=isGar?'#ff6b6b':'#7ab8ff'; x.font='bold 50px Georgia';
     x.fillText(`${sym} BOI ${isGar?'GARANTIDO':'CAPRICHOSO'}`, 540, 1240);
     x.fillStyle='#c8a96e'; x.font='36px Georgia';
-    x.fillText('BOI IMPACT — Lendas de Parintins', 540, 1295);
+    x.fillText('VIVA PARINTINS!!!', 540, 1295);
     return cv;
   },
   _wrapText(x, text, cx, cy, maxW, lh){
@@ -3261,7 +3261,7 @@ const FestivalMode = {
   },
   async shareChallenge(){
     const link=this.makeChallengeLink();
-    const txt=`⚔️ Te DESAFIO no BOI IMPACT!\nEu defendo o ${TEAM[this.team].name} ${this.team==='gar'?'❤️':'⭐'}.\nVê se consegue me superar nas fases do Festival de Parintins! 🐂🔥`;
+    const txt=`⚔️ Te DESAFIO no VIVA PARINTINS!!!\nEu defendo o ${TEAM[this.team].name} ${this.team==='gar'?'❤️':'⭐'}.\nVê se consegue me superar nas fases do Festival de Parintins! 🐂🔥`;
     try{
       if(navigator.share){ await navigator.share({text:txt,url:link}); return; }
       await navigator.clipboard.writeText(txt+'\n'+link);
@@ -3271,7 +3271,7 @@ const FestivalMode = {
   async shareProgress(){
     const done=Object.keys(this.progress).filter(k=>this.progress[k]>0).length;
     const totalStars=Object.values(this.progress).reduce((a,b)=>a+b,0);
-    const txt=`🎪 BOI IMPACT — Modo Festival\nDefendo o ${TEAM[this.team].name} ${this.team==='gar'?'❤️':'⭐'}!\n⭐ ${totalStars} estrelas em ${done}/${PHASES.length} fases.\nPlacar nacional: ❤️${this._fmt(this.collective.gar)} × ${this._fmt(this.collective.cap)}⭐\nQual é o SEU boi? 🐂`;
+    const txt=`🎪 VIVA PARINTINS!!! — Modo Festival\nDefendo o ${TEAM[this.team].name} ${this.team==='gar'?'❤️':'⭐'}!\n⭐ ${totalStars} estrelas em ${done}/${PHASES.length} fases.\nPlacar nacional: ❤️${this._fmt(this.collective.gar)} × ${this._fmt(this.collective.cap)}⭐\nQual é o SEU boi? 🐂`;
     const link=location.href.split('?')[0];
     try{
       if(navigator.share){ await navigator.share({text:txt,url:link}); return; }
