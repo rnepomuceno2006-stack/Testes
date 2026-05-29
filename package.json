@@ -4,16 +4,17 @@
   "description": "Jogo oficial do Festival Folclórico de Parintins 2026",
   "private": true,
   "scripts": {
-    "cap:add": "npx cap add android",
-    "cap:sync": "npx cap sync android",
-    "cap:open": "npx cap open android"
+    "build": "mkdir -p www && cp index.html manifest.webmanifest sw.js www/ && cp -r icons lib www/",
+    "cap:add": "npm run build && npx cap add android",
+    "cap:sync": "npm run build && npx cap sync android",
+    "cap:open": "npm run build && npx cap open android"
   },
   "dependencies": {
     "three": "0.160.0"
   },
   "devDependencies": {
-    "@capacitor/android": "^6.0.0",
-    "@capacitor/cli": "^6.0.0",
-    "@capacitor/core": "^6.0.0"
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/cli": "^6.2.1",
+    "@capacitor/core": "^6.2.1"
   }
 }

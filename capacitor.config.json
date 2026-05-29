@@ -1,7 +1,7 @@
 {
   "appId": "br.com.vivaparintins.game",
   "appName": "Viva Parintins!!!",
-  "webDir": ".",
+  "webDir": "www",
   "server": {
     "androidScheme": "https"
   },
