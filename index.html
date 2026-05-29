@@ -244,6 +244,68 @@
   #lvTap{font-size:22px;padding:18px 24px;width:100%;background:linear-gradient(180deg,#c8a96e,#8a6830);color:#1a1000;border:2px solid #ffe15a;animation:tapPulse 1s ease-in-out infinite;}
   @keyframes tapPulse{0%,100%{box-shadow:0 0 0 rgba(255,225,90,0)}50%{box-shadow:0 0 26px rgba(255,225,90,.7)}}
   #lvTap:active{transform:scale(.96);}
+
+  /* ===== MAPA DE FASES (estilo Mario) ===== */
+  #phaseMap{background:radial-gradient(ellipse at 50% 0%,#16203c,#06090f);overflow-y:auto;}
+  #phaseMapInner{max-width:680px;margin:0 auto;padding:14px 14px 30px;min-height:100%;display:flex;flex-direction:column;}
+  #phaseMapHeader{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--gold);}
+  #phaseMapHeader h2{margin:0;color:var(--gold-solid);font-size:20px;}
+  #pmScoreboard{flex:1;}
+  .pm-tug-bar{height:14px;border-radius:8px;overflow:hidden;display:flex;border:1px solid var(--gold);}
+  .pm-tug-bar>div{height:100%;transition:width .4s;}
+  #pmTugGar{background:linear-gradient(90deg,#ff5252,#b71c1c);width:50%;}
+  #pmTugCap{background:linear-gradient(90deg,#1565c0,#5aa0ff);width:50%;}
+  .pm-tug small{display:block;text-align:center;margin-top:3px;font-size:12px;}
+  .pm-tug .gar{color:#ff6b6b;} .pm-tug .cap{color:#7ab8ff;}
+  #phasePath{flex:1;position:relative;padding:24px 0;display:flex;flex-direction:column;align-items:center;gap:0;}
+  .phase-node{position:relative;display:flex;align-items:center;gap:14px;width:100%;max-width:440px;padding:14px 18px;margin:9px 0;border-radius:18px;border:2px solid rgba(200,169,110,.4);
+    background:linear-gradient(150deg,rgba(24,32,56,.95),rgba(10,14,28,.95));cursor:pointer;transition:transform .12s,box-shadow .15s;}
+  .phase-node:nth-child(even){flex-direction:row-reverse;text-align:right;align-self:flex-end;}
+  .phase-node:nth-child(odd){align-self:flex-start;}
+  .phase-node.locked{opacity:.45;filter:grayscale(.7);cursor:not-allowed;}
+  .phase-node.done{border-color:#ffe15a;box-shadow:0 0 18px rgba(255,225,90,.3);}
+  .phase-node:not(.locked):hover{transform:scale(1.03);box-shadow:0 0 22px rgba(200,169,110,.5);}
+  .phase-icon{font-size:40px;line-height:1;flex-shrink:0;}
+  .phase-info{flex:1;}
+  .phase-info .pt{font-family:'Cinzel Decorative',serif;font-size:15px;color:var(--gold-solid);}
+  .phase-info .pd{font-size:12px;opacity:.7;}
+  .phase-info .ptype{font-size:10px;text-transform:uppercase;letter-spacing:1px;opacity:.55;margin-top:2px;}
+  .phase-stars{font-size:14px;color:#ffe15a;letter-spacing:1px;}
+  .phase-connector{width:4px;height:18px;background:repeating-linear-gradient(180deg,var(--gold-solid) 0 5px,transparent 5px 10px);opacity:.5;}
+  #pmFooter{display:flex;gap:10px;justify-content:center;padding-top:14px;border-top:1px solid var(--gold);flex-wrap:wrap;}
+
+  /* ===== MINI-GAMES ===== */
+  #miniGame{background:rgba(4,7,16,.97);}
+  #mgInner{max-width:560px;width:94%;}
+  #mgHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  #mgHeader h3{margin:0;color:var(--gold-solid);}
+  #mgBody{min-height:280px;}
+  #mgFooter{display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid var(--gold);font-weight:700;}
+  /* ritmo */
+  #rhythmLanes{position:relative;height:300px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#0a1020,#060a14);border:1px solid var(--gold);}
+  .rh-hitline{position:absolute;bottom:54px;left:0;right:0;height:4px;background:#ffe15a;box-shadow:0 0 14px #ffe15a;z-index:3;}
+  .rh-note{position:absolute;width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;
+    left:50%;transform:translateX(-50%);box-shadow:0 0 18px var(--nglow,#ffe15a);z-index:2;}
+  .rh-judge{position:absolute;bottom:120px;left:50%;transform:translateX(-50%);font-size:32px;font-weight:700;z-index:4;font-family:'Cinzel Decorative',serif;}
+  #rhythmTap{width:100%;margin-top:10px;font-size:22px;padding:20px;background:linear-gradient(180deg,#c8a96e,#8a6830);color:#1a1000;border:2px solid #ffe15a;}
+  #rhythmTap:active{transform:scale(.97);}
+  /* quiz */
+  .quiz-q{font-size:17px;margin-bottom:14px;line-height:1.4;}
+  .quiz-opt{display:block;width:100%;text-align:left;margin:7px 0;padding:13px 16px;border-radius:12px;border:1px solid rgba(200,169,110,.4);
+    background:rgba(20,28,48,.8);color:var(--txt);cursor:pointer;font-size:15px;transition:all .12s;}
+  .quiz-opt:hover{border-color:var(--gold-solid);background:rgba(40,52,82,.9);}
+  .quiz-opt.correct{background:rgba(40,160,60,.5);border-color:#4caf50;}
+  .quiz-opt.wrong{background:rgba(180,40,40,.5);border-color:#f44336;}
+  /* contrário */
+  #contrarioGame{text-align:center;}
+  .ct-word{font-size:60px;font-weight:900;font-family:'Cinzel Decorative',serif;margin:30px 0;min-height:80px;}
+  .ct-btns{display:flex;gap:14px;justify-content:center;}
+  .ct-btns .btn{font-size:20px;padding:18px 30px;}
+  /* versos */
+  #versosGame{text-align:center;}
+  .vs-line{font-size:18px;font-style:italic;margin:16px 0;min-height:50px;line-height:1.4;}
+  .vs-opt{display:block;width:100%;margin:8px 0;padding:13px;border-radius:12px;border:1px solid rgba(200,169,110,.4);background:rgba(20,28,48,.8);color:var(--txt);cursor:pointer;font-size:15px;}
+  .vs-opt:hover{border-color:var(--gold-solid);}
 </style>
 </head>
 <body>
@@ -276,6 +338,61 @@
       </div>
     </div>
     <p style="margin-top:18px;font-size:13px;opacity:.6">WASD/setas para andar, mouse para girar a câmera, E/Enter para falar e pegar, J para o diário, Esc para pausar. No celular use o direcional e os botões.</p>
+    <p style="margin-top:6px;font-size:12px;opacity:.5">Dica: escolha um boi clicando no card. Para o <b>Modo Festival</b> (mapa de fases), use o botão abaixo.</p>
+    <div class="row"><button class="btn" id="btnFestival" style="font-size:17px;padding:14px 26px;">🎪 MODO FESTIVAL — Mapa de Fases</button></div>
+  </div>
+</div>
+
+<!-- ===== MODO FESTIVAL — MAPA DE FASES (estilo Mario) ===== -->
+<div id="phaseMap" class="overlay hidden">
+  <div id="phaseMapInner">
+    <div id="phaseMapHeader">
+      <div>
+        <h2 class="cinzel" id="pmTeamName">Modo Festival</h2>
+        <small id="pmProgress" style="opacity:.7"></small>
+      </div>
+      <div id="pmScoreboard">
+        <div class="pm-tug">
+          <div class="pm-tug-bar"><div id="pmTugGar"></div><div id="pmTugCap"></div></div>
+          <small><span class="gar">❤️ <b id="pmGar">0</b></span> &nbsp;×&nbsp; <span class="cap"><b id="pmCap">0</b> ⭐</span></small>
+        </div>
+      </div>
+      <button class="btn" id="pmClose">✕</button>
+    </div>
+    <div id="phasePath"></div>
+    <div id="pmFooter">
+      <button class="btn" id="pmChallenge">⚔️ Desafiar um amigo</button>
+      <button class="btn" id="pmShare">📲 Compartilhar progresso</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TELA DE MINI-GAME ===== -->
+<div id="miniGame" class="overlay hidden">
+  <div id="mgInner" class="panel glass">
+    <div id="mgHeader">
+      <h3 id="mgTitle" class="cinzel">Desafio</h3>
+      <button class="btn" id="mgQuit">✕</button>
+    </div>
+    <div id="mgBody"></div>
+    <div id="mgFooter">
+      <span id="mgScoreLabel">Pontos: <b id="mgScore">0</b></span>
+      <span id="mgCombo" style="opacity:.7"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESULTADO DE FASE ===== -->
+<div id="phaseResult" class="overlay hidden">
+  <div class="panel glass">
+    <h2 class="bigtitle cinzel" id="prTitle">Fase Concluída!</h2>
+    <div id="prStars" style="font-size:48px;margin:8px 0;"></div>
+    <p id="prText" style="opacity:.85"></p>
+    <p id="prPoints" style="font-size:22px;color:var(--gold-solid);font-weight:700;"></p>
+    <div class="row">
+      <button class="btn" id="prShare">📲 Compartilhar</button>
+      <button class="btn" id="prNext">Continuar</button>
+    </div>
   </div>
 </div>
 
@@ -703,6 +820,31 @@ class AudioEngine {
   }
   blip(){ this.tone(620,0.08,'square',0.18); }
   pickup(){ [660,880,1180].forEach((f,i)=>this.tone(f,0.22,'triangle',0.4,i*0.06)); }
+  // percussão da toada: surdo (grave) + caixa/repique
+  surdo(){ this.tone(70,0.22,'sine',0.5); this.tone(48,0.3,'sine',0.4); }
+  repique(){ this.tone(380,0.07,'square',0.22); this.tone(900,0.04,'triangle',0.15,0.02); }
+  hitGood(){ this.tone(880,0.1,'triangle',0.35); this.tone(1320,0.12,'triangle',0.3,0.04); }
+  hitPerfect(){ [880,1175,1568].forEach((f,i)=>this.tone(f,0.14,'triangle',0.34,i*0.04)); }
+  hitMiss(){ this.tone(140,0.18,'sawtooth',0.25); }
+  // loop de batida instrumental de toada (boi-bumbá) — base rítmica
+  startToadaBeat(team){
+    this.ensure(); if(this.beatOn) return; this.beatOn=true;
+    const bpm = team==='gar'? 130 : 124;       // marujada/batucada
+    const interval = 60000/bpm/2;              // colcheias
+    const scale = (TOADAS[team]||TOADAS.gar).scale;
+    let step=0;
+    const tick=()=>{
+      if(!this.beatOn) return;
+      // surdo no tempo forte, repique nas subdivisões
+      if(step%4===0) this.surdo();
+      else if(step%2===0) this.repique();
+      if(step%8===3 || step%8===6) this.repique();
+      // melodia esparsa da toada
+      if(step%4===2){ const n=scale[Math.floor(Math.random()*scale.length)]; this.tone(n,0.45,'triangle',0.12); }
+      step++; this.beatTimer=setTimeout(tick, interval);
+    }; tick();
+  }
+  stopToadaBeat(){ this.beatOn=false; if(this.beatTimer) clearTimeout(this.beatTimer); }
   fanfare(){ [392,523,659,784].forEach((f,i)=>this.tone(f,0.4,'sawtooth',0.3,i*0.12)); this.tone(1046,0.7,'triangle',0.3,0.5); }
   win(){ [523,659,784,1046,1318].forEach((f,i)=>this.tone(f,0.5,'triangle',0.36,i*0.14)); }
   // scaleOverride: escala da toada do boi escolhido (ver TOADAS[team].scale).
@@ -1701,6 +1843,7 @@ class Game {
 
   _setupUIEvents(){
     document.querySelectorAll('.team-card').forEach(c=>c.addEventListener('click',()=>this.startGame(c.dataset.team)));
+    $('btnFestival').onclick=()=>{ this.audio.resume(); FestivalMode.open(FestivalMode.team); };
     $('btnLog').onclick=()=>this.toggleLog();
     $('qlClose').onclick=()=>this.toggleLog(false);
     $('btnPause').onclick=()=>this.togglePause();
@@ -2463,10 +2606,414 @@ const Gallery = {
   }
 };
 
+/* =====================================================================
+   FESTIVAL MODE — mapa de fases (estilo Mario) com mini-games.
+   Cada fase = um ponto turístico de Parintins + um quesito do festival.
+   Tipos de desafio: 'ritmo' (toada), 'quiz', 'contrario', 'versos'.
+   Pontos alimentam o cabo-de-guerra coletivo (placar nacional dos bois).
+   ===================================================================== */
+const PHASES = [
+  { id:'orla',   name:'Orla do Rio Amazonas', icon:'🚣', quesito:'Chegada / Marujada',
+    type:'ritmo',  desc:'Toque no ritmo do surdo enquanto as canoas chegam ao porto.' },
+  { id:'catedral', name:'Catedral N. S. do Carmo', icon:'⛪', quesito:'História do Festival',
+    type:'quiz',   desc:'Prove que conhece a história do boi de Parintins.' },
+  { id:'cidade', name:'Cidade Flutuante', icon:'🛖', quesito:'Regra do Contrário',
+    type:'contrario', desc:'Jamais diga a cor do boi contrário! Reflexo e lealdade.' },
+  { id:'curral', name:'Curral do Boi', icon:'🐂', quesito:'Lenda do Boi-Bumbá',
+    type:'quiz',   desc:'Pai Francisco, Mãe Catirina e o boi ressuscitado.' },
+  { id:'galpao', name:'Galpão de Alegorias', icon:'🎨', quesito:'Tribos & Tuxauas',
+    type:'ritmo',  desc:'Sincronize a batucada na evolução das alegorias.' },
+  { id:'amo',    name:'Tablado do Amo do Boi', icon:'🎤', quesito:'Amo do Boi (repente)',
+    type:'versos', desc:'Batalha de versos! Responda à provocação do contrário.' },
+  { id:'bumbodromo', name:'Bumbódromo — Grande Final', icon:'🏟️', quesito:'Apoteose',
+    type:'ritmo',  desc:'A noite decisiva! Toada completa na arena dos 35 mil.' },
+];
+
+const QUIZ_BANK = {
+  catedral:[
+    { q:'Em que ano foram fundados o Garantido e o Caprichoso?', o:['1913','1965','1888','2000'], a:0 },
+    { q:'Quem fundou o Boi Garantido?', o:['Lindolfo Monteverde','Os irmãos Cid','Padre Augusto','Xisto Pereira'], a:0 },
+    { q:'O Festival de Parintins, como disputa organizada, nasceu em:', o:['1965','1913','1950','1980'], a:0 },
+    { q:'Quantos itens (quesitos) são julgados pelos jurados?', o:['21','10','15','30'], a:0 },
+    { q:'Qual a capacidade aproximada do Bumbódromo?', o:['35 mil','5 mil','100 mil','12 mil'], a:0 },
+    { q:'As notas dos jurados vão de:', o:['8,0 a 10,0','0 a 10','1 a 5','7,0 a 9,0'], a:0 },
+  ],
+  curral:[
+    { q:'O que Mãe Catirina desejava comer, grávida?', o:['Língua do boi','Peixe assado','Açaí','Tucumã'], a:0 },
+    { q:'Quem matou o boi para satisfazer o desejo?', o:['Pai Francisco','O Amo','O Pajé','O vaqueiro'], a:0 },
+    { q:'Quem ressuscita o boi na lenda?', o:['O Pajé','A Cunhã-Poranga','O Levantador','A Sinhazinha'], a:0 },
+    { q:'A bateria do Caprichoso se chama:', o:['Marujada de Guerra','Batucada','Bateria Azul','Surdo Real'], a:0 },
+    { q:'A bateria do Garantido se chama:', o:['Batucada','Marujada','Tambores','Galera'], a:0 },
+    { q:'"Cunhã-Poranga" significa, em tupi:', o:['Mulher bonita/guerreira','Mãe da floresta','Estrela do rio','Filha do sol'], a:0 },
+  ]
+};
+
+const VERSOS_BANK = [
+  { prov:'O contrário diz que é dono da arena...', opts:[
+      {t:'Mas quem encanta o povo é o meu boi na poesia plena!', good:true},
+      {t:'Concordo, eles são melhores mesmo.', good:false},
+      {t:'Vou desistir e ir pra casa.', good:false} ] },
+  { prov:'Dizem que a galera deles não tem igual...', opts:[
+      {t:'A minha torcida é raça, é amor, é arraial!', good:true},
+      {t:'É verdade, a deles canta mais bonito.', good:false},
+      {t:'Não sei cantar, melhor ficar calado.', good:false} ] },
+  { prov:'O Amo contrário soltou um verso afiado...', opts:[
+      {t:'Respondo na hora, com repente abençoado!', good:true},
+      {t:'Fiquei sem resposta, perdi o verso.', good:false},
+      {t:'Vou copiar o verso dele.', good:false} ] },
+];
+
+const FestivalMode = {
+  team:'gar',
+  state:null,   // estado do mini-game atual
+  game:null,    // referência ao Game (áudio/partículas)
+
+  load(){
+    this.progress = JSON.parse(localStorage.getItem('boi_festival')||'{}');
+    this.team = localStorage.getItem('boi_festival_team') || 'gar';
+    // placar coletivo nacional simulado (seed do dia + acúmulo do jogador)
+    this.collective = JSON.parse(localStorage.getItem('boi_collective')||'null') || this._seedCollective();
+  },
+  save(){
+    localStorage.setItem('boi_festival', JSON.stringify(this.progress));
+    localStorage.setItem('boi_festival_team', this.team);
+    localStorage.setItem('boi_collective', JSON.stringify(this.collective));
+  },
+  _seedCollective(){
+    // placar nacional do dia — pseudo-aleatório baseado na data
+    const today=new Date().toISOString().slice(0,10);
+    let h=0; for(const ch of today) h=(h*31+ch.charCodeAt(0))&0xffffff;
+    const base=800000+(h%400000);
+    return { day:today, gar:base, cap:base+((h>>3)%120000)-60000 };
+  },
+
+  open(teamFromGame){
+    this.load();
+    if(teamFromGame) this.team=teamFromGame;
+    // reseta placar coletivo se virou o dia
+    const today=new Date().toISOString().slice(0,10);
+    if(this.collective.day!==today) this.collective=this._seedCollective();
+    this._checkPvP();
+    this.render();
+    $('intro').classList.add('hidden');
+    $('phaseMap').classList.remove('hidden');
+  },
+  close(){ $('phaseMap').classList.add('hidden'); $('intro').classList.remove('hidden'); },
+
+  render(){
+    const t=TEAM[this.team];
+    $('pmTeamName').textContent = `Modo Festival — ${t.name}`;
+    const done=Object.keys(this.progress).filter(k=>this.progress[k]>0).length;
+    $('pmProgress').textContent = `${done}/${PHASES.length} fases • Toque numa fase para jogar`;
+    this._renderTug();
+    const path=$('phasePath'); path.innerHTML='';
+    PHASES.forEach((p,i)=>{
+      const unlocked = i===0 || this.progress[PHASES[i-1].id]>0;
+      const stars = this.progress[p.id]||0;
+      const node=document.createElement('div');
+      node.className='phase-node'+(unlocked?'':' locked')+(stars>0?' done':'');
+      const typeLabel={ritmo:'🥁 Ritmo de Toada',quiz:'❓ Quiz da Torcida',contrario:'🤫 Regra do Contrário',versos:'🎤 Batalha de Versos'}[p.type];
+      node.innerHTML=`
+        <div class="phase-icon">${unlocked?p.icon:'🔒'}</div>
+        <div class="phase-info">
+          <div class="pt">Fase ${i+1}: ${p.name}</div>
+          <div class="pd">${p.quesito} — ${p.desc}</div>
+          <div class="ptype">${typeLabel}</div>
+        </div>
+        <div class="phase-stars">${stars>0?'★'.repeat(stars)+'☆'.repeat(3-stars):''}</div>`;
+      if(unlocked) node.onclick=()=>this.startPhase(p);
+      path.appendChild(node);
+      if(i<PHASES.length-1){ const c=document.createElement('div'); c.className='phase-connector'; path.appendChild(c); }
+    });
+  },
+  _renderTug(){
+    const g=this.collective.gar, c=this.collective.cap, tot=g+c;
+    const gp=Math.round(g/tot*100);
+    $('pmTugGar').style.width=gp+'%'; $('pmTugCap').style.width=(100-gp)+'%';
+    $('pmGar').textContent=this._fmt(g); $('pmCap').textContent=this._fmt(c);
+  },
+  _fmt(n){ return n>=1000?(n/1000).toFixed(0)+'k':n; },
+
+  // adiciona pontos ao placar nacional do boi do jogador
+  addCollective(pts){
+    this.collective[this.team]+=pts;
+    // contrário também ganha um pouco (torcida nacional ativa)
+    const rival=this.team==='gar'?'cap':'gar';
+    this.collective[rival]+=Math.floor(pts*(0.6+Math.random()*0.5));
+    this.save();
+  },
+
+  /* ---------- lançar fase ---------- */
+  startPhase(p){
+    this.currentPhase=p;
+    this.score=0; this.combo=0; this.maxCombo=0;
+    $('phaseMap').classList.add('hidden');
+    $('miniGame').classList.remove('hidden');
+    $('mgTitle').textContent=`${p.icon} ${p.name}`;
+    $('mgScore').textContent='0'; $('mgCombo').textContent='';
+    const A=this.game&&this.game.audio;
+    if(A) A.resume();
+    if(p.type==='ritmo') this._startRhythm(p);
+    else if(p.type==='quiz') this._startQuiz(p);
+    else if(p.type==='contrario') this._startContrario(p);
+    else if(p.type==='versos') this._startVersos(p);
+  },
+  _setScore(s){ this.score=s; $('mgScore').textContent=s; },
+  _addScore(s){ this._setScore(this.score+s); },
+
+  /* ---------- RITMO DE TOADA ---------- */
+  _startRhythm(p){
+    const A=this.game&&this.game.audio;
+    if(A) A.startToadaBeat(this.team);
+    const sym=this.team==='gar'?'❤️':'⭐';
+    const glow=this.team==='gar'?'#ff5252':'#5aa0ff';
+    $('mgBody').innerHTML=`
+      <div id="rhythmLanes"><div class="rh-hitline"></div></div>
+      <button id="rhythmTap">🥁 TOCAR NA BATIDA ${sym}</button>`;
+    const lanes=$('rhythmLanes');
+    this.state={ notes:[], spawnT:0, t:0, hits:0, total:0, glow, sym, raf:null, running:true };
+    const st=this.state;
+    const bpm=this.team==='gar'?130:124, beat=60/bpm;
+    let last=performance.now();
+    const spawn=()=>{
+      const note={ y:-62, el:document.createElement('div'), judged:false };
+      note.el.className='rh-note'; note.el.style.setProperty('--nglow',glow);
+      note.el.textContent=sym;
+      lanes.appendChild(note.el);
+      st.notes.push(note); st.total++;
+    };
+    // sequência de ~16 notas
+    let spawned=0, maxNotes=16;
+    const loop=(now)=>{
+      if(!st.running) return;
+      const dt=(now-last)/1000; last=now;
+      st.t+=dt; st.spawnT+=dt;
+      if(st.spawnT>=beat && spawned<maxNotes){ spawn(); spawned++; st.spawnT=0; }
+      const H=lanes.clientHeight, hitY=H-54;
+      for(const n of st.notes){
+        if(n.judged) continue;
+        n.y += dt*180;   // velocidade de queda
+        n.el.style.top=n.y+'px';
+        if(n.y>hitY+50){ n.judged=true; this._judge('miss',n); }
+      }
+      st.notes=st.notes.filter(n=>n.el.parentNode);
+      if(spawned>=maxNotes && st.notes.every(n=>n.judged)){ st.running=false; setTimeout(()=>this._finishRhythm(),400); return; }
+      st.raf=requestAnimationFrame(loop);
+    };
+    st.raf=requestAnimationFrame(loop);
+    const tap=()=>{
+      if(!st.running) return;
+      const H=lanes.clientHeight, hitY=H-54;
+      // acha nota mais próxima da hitline não julgada
+      let best=null,bd=999;
+      for(const n of st.notes){ if(n.judged)continue; const d=Math.abs(n.y-hitY); if(d<bd){bd=d;best=n;} }
+      if(best && bd<70){ best.judged=true; this._judge(bd<28?'perfect':'good',best); }
+      else if(A) A.repique();
+    };
+    $('rhythmTap').onclick=tap;
+    this._rhythmKey=(e)=>{ if(e.code==='Space'){ e.preventDefault(); tap(); } };
+    document.addEventListener('keydown',this._rhythmKey);
+  },
+  _judge(kind,note){
+    const A=this.game&&this.game.audio;
+    const lanes=$('rhythmLanes');
+    let txt,color,pts;
+    if(kind==='perfect'){ txt='PERFEITO!';color='#ffe15a';pts=100; this.combo++; if(A)A.hitPerfect(); }
+    else if(kind==='good'){ txt='BOM!';color='#7ab8ff';pts=50; this.combo++; if(A)A.hitGood(); }
+    else { txt='ERROU';color='#ff6b6b';pts=0; this.combo=0; if(A)A.hitMiss(); }
+    this.maxCombo=Math.max(this.maxCombo,this.combo);
+    const bonus=this.combo>1?this.combo*5:0;
+    this._addScore(pts+bonus);
+    $('mgCombo').textContent=this.combo>1?`🔥 Combo x${this.combo}`:'';
+    if(note&&note.el){ note.el.style.transition='all .2s'; note.el.style.opacity='0'; note.el.style.transform='translateX(-50%) scale(1.6)'; setTimeout(()=>note.el.remove(),200); }
+    const j=document.createElement('div'); j.className='rh-judge'; j.textContent=txt; j.style.color=color;
+    lanes.appendChild(j); setTimeout(()=>j.remove(),350);
+    if(this.state) this.state.hits += (kind!=='miss'?1:0);
+  },
+  _finishRhythm(){
+    const A=this.game&&this.game.audio; if(A) A.stopToadaBeat();
+    document.removeEventListener('keydown',this._rhythmKey);
+    const acc = this.state.total? this.state.hits/this.state.total : 0;
+    this._endPhase(acc);
+  },
+
+  /* ---------- QUIZ ---------- */
+  _startQuiz(p){
+    const bank=(QUIZ_BANK[p.id]||QUIZ_BANK.catedral).slice();
+    // embaralha e pega 5
+    for(let i=bank.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bank[i],bank[j]]=[bank[j],bank[i]];}
+    this.state={ questions:bank.slice(0,5), idx:0, correct:0 };
+    this._renderQuiz();
+  },
+  _renderQuiz(){
+    const st=this.state, q=st.questions[st.idx];
+    const A=this.game&&this.game.audio;
+    let html=`<div class="quiz-q">Pergunta ${st.idx+1}/${st.questions.length}<br/><b>${q.q}</b></div>`;
+    q.o.forEach((opt,i)=>{ html+=`<button class="quiz-opt" data-i="${i}">${opt}</button>`; });
+    $('mgBody').innerHTML=html;
+    $('mgBody').querySelectorAll('.quiz-opt').forEach(btn=>{
+      btn.onclick=()=>{
+        const i=+btn.dataset.i;
+        $('mgBody').querySelectorAll('.quiz-opt').forEach(b=>b.style.pointerEvents='none');
+        if(i===q.a){ btn.classList.add('correct'); st.correct++; this._addScore(120); if(A)A.hitPerfect(); }
+        else { btn.classList.add('wrong'); $('mgBody').querySelector(`[data-i="${q.a}"]`).classList.add('correct'); if(A)A.hitMiss(); }
+        setTimeout(()=>{ st.idx++; if(st.idx>=st.questions.length) this._endPhase(st.correct/st.questions.length); else this._renderQuiz(); },1100);
+      };
+    });
+  },
+
+  /* ---------- REGRA DO CONTRÁRIO ---------- */
+  _startContrario(p){
+    const rivalColor = this.team==='gar'?'AZUL':'VERMELHO';
+    const myColor = this.team==='gar'?'VERMELHO':'AZUL';
+    const rivalName = this.team==='gar'?'CAPRICHOSO':'GARANTIDO';
+    const myName = this.team==='gar'?'GARANTIDO':'CAPRICHOSO';
+    // palavras que aparecem; proibidas = cor/nome do contrário
+    this.state={ pool:[
+        {w:myColor,ok:true},{w:rivalColor,ok:false},{w:myName,ok:true},{w:rivalName,ok:false},
+        {w:'TOADA',ok:true},{w:'GALERA',ok:true},{w:rivalColor,ok:false},{w:'CUNHÃ',ok:true},
+        {w:rivalName,ok:false},{w:'PAJÉ',ok:true},{w:myColor,ok:true},{w:rivalColor,ok:false}
+      ], idx:0, correct:0, total:0 };
+    $('mgBody').innerHTML=`<div id="contrarioGame">
+      <p style="opacity:.8">Grite a palavra do <b>SEU boi</b> (✔). Mas se aparecer a cor ou o nome do <b>contrário</b>, fique em <b>SILÊNCIO</b> (🤫)!</p>
+      <div class="ct-word" id="ctWord">Prepare-se...</div>
+      <div class="ct-btns">
+        <button class="btn" id="ctShout" style="background:linear-gradient(180deg,#c8a96e,#8a6830);color:#1a1000">📣 GRITAR</button>
+        <button class="btn" id="ctSilence">🤫 SILÊNCIO</button>
+      </div></div>`;
+    const st=this.state;
+    const A=this.game&&this.game.audio;
+    let timer=null;
+    const next=()=>{
+      if(st.idx>=st.pool.length){ this._endPhase(st.correct/st.total); return; }
+      st.cur=st.pool[st.idx]; st.total++;
+      const wEl=$('ctWord');
+      wEl.textContent=st.cur.w;
+      wEl.style.color = st.cur.ok ? (this.team==='gar'?'#ff6b6b':'#7ab8ff') : '#fff';
+      st.answered=false;
+      clearTimeout(timer);
+      timer=setTimeout(()=>{ if(!st.answered){ // não respondeu a tempo
+        if(st.cur.ok){ /* devia gritar e não gritou = erro leve */ } else { st.correct++; /* silêncio correto */ }
+        st.idx++; next(); } }, 1600);
+    };
+    const answer=(shouted)=>{
+      if(st.answered||!st.cur) return; st.answered=true; clearTimeout(timer);
+      const right = (shouted===st.cur.ok);
+      if(right){ st.correct++; this._addScore(80); if(A)A.hitGood(); $('ctWord').style.transform='scale(1.2)'; }
+      else { this._addScore(0); if(A)A.hitMiss(); $('ctWord').textContent= st.cur.ok?'❌ era do SEU boi!':'❌ era o CONTRÁRIO!'; }
+      setTimeout(()=>{ $('ctWord').style.transform=''; st.idx++; next(); }, 600);
+    };
+    $('ctShout').onclick=()=>answer(true);
+    $('ctSilence').onclick=()=>answer(false);
+    setTimeout(next,800);
+  },
+
+  /* ---------- BATALHA DE VERSOS (Amo do Boi) ---------- */
+  _startVersos(p){
+    const bank=VERSOS_BANK.slice();
+    this.state={ rounds:bank, idx:0, correct:0 };
+    this._renderVersos();
+  },
+  _renderVersos(){
+    const st=this.state, r=st.rounds[st.idx];
+    const A=this.game&&this.game.audio;
+    const opts=r.opts.map((o,i)=>`<button class="vs-opt" data-i="${i}">${o.t}</button>`).join('');
+    $('mgBody').innerHTML=`<div id="versosGame">
+      <p style="opacity:.7">🎤 Round ${st.idx+1}/${st.rounds.length} — O Amo contrário provoca:</p>
+      <div class="vs-line">"${r.prov}"</div>
+      <p style="opacity:.7">Responda no repente:</p>${opts}</div>`;
+    $('mgBody').querySelectorAll('.vs-opt').forEach(btn=>{
+      btn.onclick=()=>{
+        $('mgBody').querySelectorAll('.vs-opt').forEach(b=>b.style.pointerEvents='none');
+        const o=r.opts[+btn.dataset.i];
+        if(o.good){ btn.classList.add('correct'); st.correct++; this._addScore(150); if(A)A.fanfare(); }
+        else { btn.classList.add('wrong'); if(A)A.hitMiss(); }
+        setTimeout(()=>{ st.idx++; if(st.idx>=st.rounds.length) this._endPhase(st.correct/st.rounds.length); else this._renderVersos(); },1200);
+      };
+    });
+  },
+
+  /* ---------- fim de fase ---------- */
+  _endPhase(accuracy){
+    $('miniGame').classList.add('hidden');
+    const stars = accuracy>=0.85?3 : accuracy>=0.55?2 : accuracy>0?1 : 0;
+    const prev=this.progress[this.currentPhase.id]||0;
+    if(stars>prev) this.progress[this.currentPhase.id]=stars;
+    this.addCollective(this.score);
+    this.save();
+    $('prTitle').textContent = stars>=2?'🎉 Mandou bem!':'Fase Concluída';
+    $('prStars').textContent = '★'.repeat(stars)+'☆'.repeat(3-stars);
+    $('prText').textContent = `${this.currentPhase.quesito} — ${Math.round(accuracy*100)}% de acerto.`+
+      (this.maxCombo>3?` Combo máximo: ${this.maxCombo}!`:'');
+    $('prPoints').textContent = `+${this.score} pontos para o ${TEAM[this.team].name}!`;
+    $('phaseResult').classList.remove('hidden');
+    const A=this.game&&this.game.audio; if(A&&stars>=2) A.win();
+  },
+
+  /* ---------- PvP por link (seed do dia) ---------- */
+  _checkPvP(){
+    const params=new URLSearchParams(location.search);
+    const ch=params.get('ch');
+    if(!ch) return;
+    try{
+      const d=JSON.parse(atob(ch));
+      this._pvpChallenge=d;  // {n:nome, b:boi, p:pontos}
+      setTimeout(()=>{
+        if(this.game&&this.game.ui) this.game.ui.toast(`⚔️ ${d.n} (${TEAM[d.b].name}) te desafiou com ${d.p} pts! Supere!`);
+      },800);
+    }catch(e){}
+  },
+  makeChallengeLink(){
+    const total=Object.values(this.progress).reduce((a,b)=>a+b,0)*100 + this.collective[this.team]%10000;
+    const data=btoa(JSON.stringify({ n:'Torcedor', b:this.team, p:total }));
+    return location.href.split('?')[0]+'?ch='+data;
+  },
+  async shareChallenge(){
+    const link=this.makeChallengeLink();
+    const txt=`⚔️ Te DESAFIO no BOI IMPACT!\nEu defendo o ${TEAM[this.team].name} ${this.team==='gar'?'❤️':'⭐'}.\nVê se consegue me superar nas fases do Festival de Parintins! 🐂🔥`;
+    try{
+      if(navigator.share){ await navigator.share({text:txt,url:link}); return; }
+      await navigator.clipboard.writeText(txt+'\n'+link);
+      if(this.game&&this.game.ui) this.game.ui.toast('Desafio copiado! Cole no WhatsApp 📲');
+    }catch(e){}
+  },
+  async shareProgress(){
+    const done=Object.keys(this.progress).filter(k=>this.progress[k]>0).length;
+    const totalStars=Object.values(this.progress).reduce((a,b)=>a+b,0);
+    const txt=`🎪 BOI IMPACT — Modo Festival\nDefendo o ${TEAM[this.team].name} ${this.team==='gar'?'❤️':'⭐'}!\n⭐ ${totalStars} estrelas em ${done}/${PHASES.length} fases.\nPlacar nacional: ❤️${this._fmt(this.collective.gar)} × ${this._fmt(this.collective.cap)}⭐\nQual é o SEU boi? 🐂`;
+    const link=location.href.split('?')[0];
+    try{
+      if(navigator.share){ await navigator.share({text:txt,url:link}); return; }
+      await navigator.clipboard.writeText(txt+'\n'+link);
+      if(this.game&&this.game.ui) this.game.ui.toast('Progresso copiado! Cole no WhatsApp 📲');
+    }catch(e){}
+  },
+
+  initEvents(){
+    $('pmClose').onclick=()=>this.close();
+    $('pmTeamName').style.cursor='pointer';
+    $('pmTeamName').title='Tocar para trocar de boi';
+    $('pmTeamName').onclick=()=>{ this.team=this.team==='gar'?'cap':'gar'; this.save(); this.render(); };
+    $('mgQuit').onclick=()=>{
+      if(this.state&&this.state.raf) cancelAnimationFrame(this.state.raf);
+      if(this.state) this.state.running=false;
+      const A=this.game&&this.game.audio; if(A) A.stopToadaBeat();
+      document.removeEventListener('keydown',this._rhythmKey||(()=>{}));
+      $('miniGame').classList.add('hidden'); $('phaseMap').classList.remove('hidden');
+    };
+    $('prNext').onclick=()=>{ $('phaseResult').classList.add('hidden'); this.render(); $('phaseMap').classList.remove('hidden'); };
+    $('prShare').onclick=()=>this.shareProgress();
+    $('pmChallenge').onclick=()=>this.shareChallenge();
+    $('pmShare').onclick=()=>this.shareProgress();
+  }
+};
+
 /* ---- Boot ---- */
 window.addEventListener('load',async ()=>{
   try{
     const game=new Game();
+    FestivalMode.game=game;            // Modo Festival usa áudio/UI do Game
+    window.FestivalMode=FestivalMode;  // acesso global p/ handlers inline
     // Carrega o MAPA REAL de Parintins (Overpass -> mirror -> cache -> fallback).
     // Roda no navegador do jogador; aqui só guardamos o resultado p/ o startGame.
     const setSub=(s)=>{ const el=$('loadSub'); if(el) el.textContent=s; };
@@ -2485,6 +3032,7 @@ window.addEventListener('load',async ()=>{
   }
   if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
   Gallery.initEvents();
+  FestivalMode.initEvents();
 });
 </script>
 </body>
