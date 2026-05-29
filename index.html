@@ -11,7 +11,49 @@
 <link rel="manifest" href="./manifest.webmanifest" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;700&family=Rajdhani:wght@400;500;600;700&family=MedievalSharp&display=swap" rel="stylesheet" />
+<!-- Fontes folclóricas / tipografia Parintins-style -->
+<style id="parintins-type">
+  /* Títulos principais — festivo, decorativo, barroco amazônico */
+  h1, h2, h3, .cinzel, .festival-title {
+    font-family: 'Cinzel Decorative', 'Cinzel', serif;
+    letter-spacing: 1.5px;
+  }
+  /* Títulos de papéis/quesitos: caixa alta, espaçados, bordados de ouro */
+  .card-role, #galleryHeader h2, .gcard-role {
+    font-family: 'Cinzel Decorative', serif;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+  }
+  /* Nomes reais: serifado dourado, peso forte */
+  .card-real-name, .card-name-scroll {
+    font-family: 'Cinzel Decorative', serif;
+  }
+  /* Corpo do jogo e stats: legível, industrial-folclórico */
+  body, .btn, .gtab, .cstat, .gcard-bar, .gcard-name, .gcard-real {
+    font-family: 'Rajdhani', system-ui, sans-serif;
+  }
+  /* Decoração de bordas douradas — motivo de estandarte */
+  .card-name-scroll::before, .card-name-scroll::after {
+    content: '✦';
+    color: var(--gold-solid);
+    padding: 0 8px;
+    font-size: 12px;
+    opacity: .7;
+  }
+  /* Lore: fonte mais suave, narrativa */
+  .card-lore {
+    font-family: 'Rajdhani', serif;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  /* Botões de ação com feel de toada */
+  .card-btn, .gold-btn {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+</style>
 <style>
   :root{
     --glass: rgba(13,19,34,0.85);
@@ -128,6 +170,54 @@
     opacity:0;transition:opacity .3s;pointer-events:none;max-width:90vw;text-align:center;}
   #toast.show{opacity:1;}
   .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px;}
+
+  /* ===== GALERIA ===== */
+  #gallery{background:rgba(5,8,18,.97);overflow-y:auto;}
+  #galleryInner{max-width:900px;margin:0 auto;padding:16px 12px 40px;}
+  #galleryHeader{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--gold);margin-bottom:14px;}
+  #galleryHeader h2{margin:0;font-size:22px;color:var(--gold-solid);flex:1;min-width:160px;}
+  #galleryTabs{display:flex;gap:6px;}
+  .gtab{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;padding:6px 14px;border-radius:20px;border:1px solid rgba(200,169,110,.4);background:transparent;color:var(--txt);cursor:pointer;transition:all .15s;}
+  .gtab.active,.gtab:hover{background:var(--gold-solid);color:#000;border-color:var(--gold-solid);}
+  .gar-tab.active{background:#e2231a;border-color:#e2231a;color:#fff;}
+  .cap-tab.active{background:#1565c0;border-color:#1565c0;color:#fff;}
+  #galleryGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;}
+  .gcard{border-radius:14px;border:2px solid rgba(200,169,110,.35);background:linear-gradient(160deg,rgba(20,28,50,.95),rgba(10,14,28,.95));cursor:pointer;transition:transform .12s,box-shadow .15s;overflow:hidden;position:relative;aspect-ratio:.65;}
+  .gcard:hover{transform:translateY(-4px) scale(1.03);box-shadow:0 0 22px var(--glow,rgba(200,169,110,.6));}
+  .gcard.gar{--glow:rgba(226,35,26,.7);border-color:rgba(226,35,26,.5);}
+  .gcard.cap{--glow:rgba(21,101,192,.9);border-color:rgba(90,160,255,.6);}
+  .gcard-emoji{font-size:52px;text-align:center;padding-top:18px;line-height:1;}
+  .gcard-role{font-size:10px;font-weight:700;letter-spacing:1px;text-align:center;padding:6px 4px 2px;opacity:.7;text-transform:uppercase;}
+  .gcard-name{font-family:'Cinzel',serif;font-size:11px;text-align:center;padding:0 4px 4px;color:var(--gold-solid);line-height:1.3;}
+  .gcard-real{font-size:10px;text-align:center;padding:0 4px 10px;opacity:.65;}
+  .gcard-bar{display:flex;justify-content:center;gap:6px;padding:0 6px 8px;font-size:10px;font-weight:700;}
+  .gcard-bar span{background:rgba(0,0,0,.4);border-radius:6px;padding:2px 5px;}
+  .gcard-shine{position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08) 0%,transparent 50%);pointer-events:none;border-radius:12px;}
+  .gcard-team-badge{position:absolute;top:7px;right:8px;font-size:14px;}
+
+  /* ===== CARD DETALHE ===== */
+  #charCard{background:rgba(3,5,14,.96);}
+  #charCardInner{position:relative;width:100%;max-width:480px;margin:0 auto;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:0;}
+  .card-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 30%,var(--card-glow,rgba(90,160,255,.18)),transparent 70%);pointer-events:none;z-index:0;}
+  .card-stars-layer{position:absolute;top:0;left:0;width:100%;height:55%;pointer-events:none;z-index:1;overflow:hidden;}
+  .card-role{position:relative;z-index:5;font-family:'Cinzel',serif;font-size:13px;letter-spacing:2px;color:var(--gold-solid);text-align:center;padding:18px 20px 4px;text-shadow:0 0 12px rgba(200,169,110,.6);}
+  .card-name-scroll{position:relative;z-index:5;width:90%;background:linear-gradient(90deg,rgba(80,55,10,.0),rgba(180,140,50,.25),rgba(80,55,10,.0));border:1px solid rgba(200,169,110,.4);border-radius:8px;padding:6px 16px;margin-bottom:4px;text-align:center;}
+  .card-real-name{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:#ffe88a;text-shadow:0 0 16px rgba(255,220,80,.5);}
+  .card-art-area{position:relative;z-index:5;width:100%;flex:1;display:flex;align-items:center;justify-content:center;min-height:200px;}
+  .card-emoji-giant{font-size:130px;line-height:1;filter:drop-shadow(0 0 30px var(--card-glow,rgba(90,160,255,.5)));}
+  .card-stats-bar{position:relative;z-index:5;display:flex;gap:14px;padding:8px 20px;border-radius:30px;margin:0 12px;font-size:15px;font-weight:700;}
+  .cstat{display:flex;align-items:center;gap:4px;}
+  .sico{width:16px;height:16px;}
+  .card-lore{position:relative;z-index:5;margin:10px 14px;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;opacity:.85;text-align:center;max-height:80px;overflow-y:auto;}
+  .card-btns{position:relative;z-index:5;display:flex;gap:8px;padding:8px 14px;width:100%;}
+  .card-btn{flex:1;text-align:center;font-size:13px;padding:8px 4px;}
+  .gold-btn{background:linear-gradient(180deg,#c8a96e,#8a6830);color:#1a1000;border-color:#c8a96e;}
+  .card-nav{position:relative;z-index:5;display:flex;gap:12px;padding:6px 14px 14px;width:100%;justify-content:space-between;}
+  .card-nav-btn{font-size:22px;padding:6px 18px;min-width:60px;}
+  .card-x-btn{position:absolute;top:12px;right:14px;z-index:10;background:rgba(0,0,0,.6);border:1px solid rgba(200,169,110,.4);border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;color:var(--txt);display:flex;align-items:center;justify-content:center;}
+  /* floating luma stars animation */
+  @keyframes floatStar{0%{transform:translateY(0) scale(1);opacity:.9}50%{transform:translateY(-18px) scale(1.1);opacity:1}100%{transform:translateY(-36px) scale(.8);opacity:0}}
+  .luma-star{position:absolute;font-size:20px;animation:floatStar 2.2s ease-in-out infinite;}
 </style>
 </head>
 <body>
@@ -173,6 +263,7 @@
       <div class="scorebox gar" id="sbGar">GAR 0</div>
       <div class="scorebox cap" id="sbCap">CAP 0</div>
     </div>
+    <button class="btn hudbtn" id="btnPersonagens" onclick="Gallery.open()">🌟 Lendas</button>
     <button class="btn hudbtn" id="btnLog">Diário (J)</button>
     <button class="btn hudbtn" id="btnPause">&#9208;</button>
   </div>
@@ -206,6 +297,7 @@
     <div class="row">
       <button class="btn" id="resumeBtn">Continuar</button>
       <button class="btn" id="pauseLogBtn">Diário</button>
+      <button class="btn" onclick="$('pause').classList.add('hidden');Gallery.open()">🌟 Lendas</button>
     </div>
   </div>
 </div>
@@ -225,6 +317,54 @@
     <p id="fText" style="opacity:.9;font-size:17px"></p>
     <div class="vs"><span class="s gar" id="fGar">0</span><span class="x">&times;</span><span class="s cap" id="fCap">0</span></div>
     <div class="row"><button class="btn" id="fRestart">Jogar de Novo</button></div>
+  </div>
+</div>
+
+<!-- ===== GALERIA DE PERSONAGENS ===== -->
+<div id="gallery" class="overlay hidden">
+  <div id="galleryInner">
+    <div id="galleryHeader">
+      <h2 class="cinzel" id="galleryTitle">Lendas de Parintins</h2>
+      <div id="galleryTabs">
+        <button class="gtab active" data-team="all">Todos</button>
+        <button class="gtab gar-tab" data-team="gar">❤️ Garantido</button>
+        <button class="gtab cap-tab" data-team="cap">⭐ Caprichoso</button>
+      </div>
+      <button class="btn" id="galleryClose">✕ Fechar</button>
+    </div>
+    <div id="galleryGrid"></div>
+  </div>
+</div>
+
+<!-- ===== CARD DETALHE ===== -->
+<div id="charCard" class="overlay hidden">
+  <div id="charCardInner">
+    <button id="cardClose" class="card-x-btn">✕</button>
+    <div id="cardBg" class="card-bg"></div>
+    <div id="cardStars" class="card-stars-layer"></div>
+    <div id="cardRole" class="card-role"></div>
+    <div id="cardNameScroll" class="card-name-scroll">
+      <div id="cardRealName" class="card-real-name"></div>
+    </div>
+    <div id="cardArt" class="card-art-area">
+      <div id="cardEmoji" class="card-emoji-giant"></div>
+    </div>
+    <div id="cardStats" class="card-stats-bar glass">
+      <span class="cstat"><img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><circle cx='10' cy='10' r='9' fill='%23e52'/><text y='14' x='10' text-anchor='middle' font-size='13' fill='white'>🍄</text></svg>" class="sico"> <span id="cHP">0</span></span>
+      <span class="cstat">🌺 <span id="cMP">0</span></span>
+      <span class="cstat">⚙️ <span id="cEN">0</span></span>
+      <span class="cstat">💙 <span id="cHR">0</span></span>
+    </div>
+    <div id="cardLore" class="card-lore glass"></div>
+    <div id="cardBtns" class="card-btns">
+      <button class="btn card-btn" id="cardLuma">✦ LUMA</button>
+      <button class="btn card-btn" id="cardMenu">MENU</button>
+      <button class="btn card-btn gold-btn" id="cardFav">★ FAVORITO</button>
+    </div>
+    <div id="cardNav" class="card-nav">
+      <button class="btn card-nav-btn" id="cardPrev">‹</button>
+      <button class="btn card-nav-btn" id="cardNext">›</button>
+    </div>
   </div>
 </div>
 
@@ -1691,6 +1831,286 @@ class Game {
   }
 }
 
+/* =====================================================================
+   ROSTER — todos os personagens com stats, lore e dados visuais.
+   Stars (⭐) = raridade 1-3.  Stats: hp/mp/en/hr (0-100).
+   emoji = arte placeholder até assets reais chegarem.
+   ===================================================================== */
+const ROSTER = [
+  /* ---- BOI GARANTIDO ---- */
+  {
+    id:'gar_boi', team:'gar', role:'Boi Sagrado', name:'Boi Garantido',
+    realName:'A Estrela do Povo',
+    emoji:'🐂', stars:3,
+    hp:100, mp:60, en:80, hr:90,
+    glow:'rgba(226,35,26,.7)',
+    lore:'O Boi Vermelho da Baixa de São José. Seu coração vermelho pulsa no peito e a galera grita: Garantidada! Símbolo de fé, amor e resistência do povo de Parintins.'
+  },
+  {
+    id:'gar_cunha', team:'gar', role:'Cunhã Poranga', name:'Cunhã Poranga',
+    realName:'Representa o Povo Vermelho',
+    emoji:'💃', stars:3,
+    hp:70, mp:80, en:60, hr:85,
+    glow:'rgba(226,35,26,.6)',
+    lore:'A mulher mais bonita do boi, símbolo da feminilidade indígena amazônica. Seus movimentos encantam os jurados e fazem a arena vibrar de vermelho.'
+  },
+  {
+    id:'gar_sinha', team:'gar', role:'Sinhazinha da Fazenda', name:'Sinhazinha da Fazenda',
+    realName:'Donzela Vermelha',
+    emoji:'👸', stars:3,
+    hp:65, mp:75, en:55, hr:90,
+    glow:'rgba(226,35,26,.6)',
+    lore:'Filha do dono da fazenda, testemunha do drama do Boi Garantido. Seu vestido vermelho e sombrinha bordada são símbolos de elegância e devoção.'
+  },
+  {
+    id:'gar_rainha', team:'gar', role:'Rainha do Folclore', name:'Rainha do Folclore',
+    realName:'Majestade Vermelha',
+    emoji:'👑', stars:3,
+    hp:60, mp:90, en:50, hr:95,
+    glow:'rgba(226,35,26,.7)',
+    lore:'Rainha absoluta da cultura folclórica amazônica. Suas asas vermelhas e douradas evocam as aves da floresta. Quando canta, o Bumbódromo vira templo.'
+  },
+  {
+    id:'gar_porta', team:'gar', role:'Porta Estandarte', name:'Porta Estandarte',
+    realName:'Guardiã da Bandeira',
+    emoji:'🚩', stars:2,
+    hp:75, mp:55, en:70, hr:75,
+    glow:'rgba(226,35,26,.5)',
+    lore:'Carrega a bandeira sagrada do Garantido com força e ginga. Cada movimento do estandarte vermelho é uma declaração de amor ao boi do povo.'
+  },
+  {
+    id:'gar_paje', team:'gar', role:'Pajé do Boi', name:'Pajé do Boi Garantido',
+    realName:'Mestre dos Rituais',
+    emoji:'🪶', stars:3,
+    hp:80, mp:95, en:75, hr:70,
+    glow:'rgba(200,100,20,.8)',
+    lore:'Xamã supremo, guardião dos segredos da floresta. Sua pintura corporal de onça e seu cajado ritual invocam os espíritos que protegem o Boi Garantido nas três noites.'
+  },
+  {
+    id:'gar_levanta', team:'gar', role:'Levantador de Toadas', name:'Levantador de Toadas',
+    realName:'A Voz Vermelha',
+    emoji:'🎤', stars:3,
+    hp:55, mp:85, en:90, hr:80,
+    glow:'rgba(226,35,26,.6)',
+    lore:'Sua voz é a alma do Garantido. Quando levanta a toada, cinquenta mil corações vermelhos batem no mesmo ritmo. O perreché ecoa do Bumbódromo até a beira do rio.'
+  },
+  {
+    id:'gar_apresent', team:'gar', role:'Apresentador', name:'Apresentador',
+    realName:'Voz da Arena Vermelha',
+    emoji:'🎙️', stars:2,
+    hp:55, mp:70, en:85, hr:75,
+    glow:'rgba(226,35,26,.5)',
+    lore:'Comanda as três noites do festival com maestria e paixão. Com seu microfone de ouro e voz potente, conduz o público numa viagem pela lenda do Boi Garantido.'
+  },
+
+  /* ---- BOI CAPRICHOSO ---- */
+  {
+    id:'cap_boi', team:'cap', role:'Boi Sagrado', name:'Boi Caprichoso',
+    realName:'A Estrela da Amazônia',
+    emoji:'🐃', stars:3,
+    hp:100, mp:65, en:80, hr:85,
+    glow:'rgba(21,101,192,.9)',
+    lore:'O Boi Negro da Francesa. A estrela azul em sua testa guia os brincantes pela noite. Caprichoso é arte, é poesia, é a Amazônia que resiste e celebra.'
+  },
+  {
+    id:'cap_cunha', team:'cap', role:'Cunhã Poranga', name:'Cunhã Poranga',
+    realName:'Marcyele Albuquerque',
+    emoji:'🦜', stars:3,
+    hp:70, mp:80, en:60, hr:85,
+    glow:'rgba(21,101,192,.8)',
+    lore:'Marcyele Albuquerque incorpora a força da mulher amazônica. Suas asas de arara-azul e canari dourado são uma explosão de cor e identidade nativa no Bumbódromo.'
+  },
+  {
+    id:'cap_sinha', team:'cap', role:'Sinhazinha da Fazenda', name:'Sinhazinha da Fazenda',
+    realName:'Valentina Cid',
+    emoji:'☂️', stars:3,
+    hp:65, mp:75, en:55, hr:90,
+    glow:'rgba(21,101,192,.7)',
+    lore:'Valentina Cid brilha com seu vestido azul e branco adornado de estrelas. Sua sombrinha encantada e sorriso iluminado representam a elegância e pureza do Caprichoso.'
+  },
+  {
+    id:'cap_rainha', team:'cap', role:'Rainha do Folclore', name:'Rainha do Folclore',
+    realName:'Cleise Simas',
+    emoji:'🦋', stars:3,
+    hp:60, mp:95, en:50, hr:95,
+    glow:'rgba(21,101,192,.9)',
+    lore:'Cleise Simas tem asas de borboleta esmeralda que encantam o universo do Caprichoso. Quando canta e dança, transforma o Bumbódromo numa catedral de estrelas e floresta.'
+  },
+  {
+    id:'cap_porta', team:'cap', role:'Porta Estandarte', name:'Porta Estandarte',
+    realName:'Marcela Marialva',
+    emoji:'🏳️', stars:2,
+    hp:75, mp:55, en:70, hr:75,
+    glow:'rgba(21,101,192,.7)',
+    lore:'Marcela Marialva carrega o estandarte "Ancestralidade" com graça inigualável. Seu cocar amazônico e a bandeira azul do Caprichoso são um hino visual à cultura indígena.'
+  },
+  {
+    id:'cap_paje', team:'cap', role:'Pajé do Boi', name:'Pajé do Boi Caprichoso',
+    realName:'Erick Beltrão',
+    emoji:'🌙', stars:3,
+    hp:80, mp:95, en:75, hr:70,
+    glow:'rgba(80,20,180,.9)',
+    lore:'Erick Beltrão é o Pajé dos Pajés. Sua pintura de onça, penas roxas e azuis e o cajado sagrado invocam os mistérios da noite amazônica. O ritual do Caprichoso começa com ele.'
+  },
+  {
+    id:'cap_levanta', team:'cap', role:'Levantador de Toadas', name:'Levantador de Toadas',
+    realName:'Patrick Araujo',
+    emoji:'🎵', stars:3,
+    hp:55, mp:85, en:90, hr:80,
+    glow:'rgba(21,101,192,.8)',
+    lore:'Patrick Araujo voa sobre o palco com suas asas brancas de boi azul. Quando levanta a toada "É Hoje!", a torcida do Caprichoso explode numa onda azul que sacode o Rio Amazonas.'
+  },
+  {
+    id:'cap_apresent', team:'cap', role:'Apresentador', name:'Apresentador',
+    realName:'Edmundo Oran',
+    emoji:'⭐', stars:2,
+    hp:55, mp:70, en:85, hr:75,
+    glow:'rgba(21,101,192,.7)',
+    lore:'Edmundo Oran comanda a arena com carisma e presença únicos. Suas estrelas azuis e asas brilhantes fazem o público caprichosense vibrar nas três noites do maior festival do Brasil.'
+  }
+];
+
+/* =====================================================================
+   GALLERY UI — tela de coleção de personagens estilo Mario Galaxy
+   ===================================================================== */
+const Gallery = {
+  currentFilter: 'all',
+  currentIdx: 0,
+  favs: new Set(JSON.parse(localStorage.getItem('boi_favs')||'[]')),
+
+  saveFavs(){
+    localStorage.setItem('boi_favs', JSON.stringify([...this.favs]));
+  },
+
+  filtered(){
+    if(this.currentFilter==='all') return ROSTER;
+    return ROSTER.filter(c=>c.team===this.currentFilter);
+  },
+
+  open(teamFilter){
+    this.currentFilter = teamFilter||'all';
+    this.render();
+    $('gallery').classList.remove('hidden');
+    // sync tab buttons
+    document.querySelectorAll('.gtab').forEach(b=>{
+      b.classList.toggle('active', b.dataset.team===this.currentFilter);
+    });
+  },
+
+  close(){
+    $('gallery').classList.add('hidden');
+  },
+
+  render(){
+    const list = this.filtered();
+    const grid = $('galleryGrid');
+    grid.innerHTML = '';
+    list.forEach((c,i)=>{
+      const div = document.createElement('div');
+      div.className = `gcard ${c.team}`;
+      div.style.setProperty('--glow', c.glow);
+      div.innerHTML = `
+        <div class="gcard-team-badge">${c.team==='gar'?'❤️':'⭐'}</div>
+        <div class="gcard-emoji">${c.emoji}</div>
+        <div class="gcard-role">${c.role}</div>
+        <div class="gcard-name">${c.name}</div>
+        <div class="gcard-real">${c.realName}</div>
+        <div class="gcard-bar">
+          <span>🍄${c.hp}</span><span>⚙️${c.en}</span><span>💙${c.hr}</span>
+        </div>
+        <div class="gcard-shine"></div>`;
+      div.addEventListener('click',()=>this.openCard(i));
+      grid.appendChild(div);
+    });
+  },
+
+  openCard(idx){
+    const list = this.filtered();
+    if(idx<0||idx>=list.length) return;
+    this.currentIdx = idx;
+    const c = list[idx];
+    // bg glow
+    $('cardBg').style.setProperty('--card-glow', c.glow);
+    $('charCardInner').style.setProperty('--card-glow', c.glow);
+    // floating stars
+    const sl = $('cardStars');
+    sl.innerHTML='';
+    for(let i=0;i<6;i++){
+      const s=document.createElement('div');
+      s.className='luma-star';
+      s.textContent= c.team==='cap'?'⭐':'✦';
+      s.style.left=Math.random()*90+'%';
+      s.style.top=Math.random()*40+'%';
+      s.style.animationDelay=(Math.random()*2)+'s';
+      s.style.fontSize=(14+Math.random()*14)+'px';
+      sl.appendChild(s);
+    }
+    $('cardRole').textContent = `✦ ${c.role} (${c.team==='gar'?'Garantido':'Caprichoso'}) ✦`;
+    $('cardRealName').textContent = c.realName;
+    $('cardEmoji').textContent = c.emoji;
+    $('cHP').textContent=c.hp; $('cMP').textContent=c.mp;
+    $('cEN').textContent=c.en; $('cHR').textContent=c.hr;
+    $('cardLore').textContent = c.lore;
+    $('cardFav').textContent = this.favs.has(c.id) ? '★ FAVORITO ✓' : '★ FAVORITO';
+    $('cardFav').style.background = this.favs.has(c.id)
+      ? 'linear-gradient(180deg,#ffe566,#c8a930)' : '';
+    $('charCard').classList.remove('hidden');
+    $('gallery').classList.add('hidden');
+  },
+
+  closeCard(){
+    $('charCard').classList.add('hidden');
+    $('gallery').classList.remove('hidden');
+  },
+
+  toggleFav(id){
+    if(this.favs.has(id)) this.favs.delete(id);
+    else this.favs.add(id);
+    this.saveFavs();
+    const c = this.filtered()[this.currentIdx];
+    $('cardFav').textContent = this.favs.has(c.id) ? '★ FAVORITO ✓' : '★ FAVORITO';
+    $('cardFav').style.background = this.favs.has(c.id)
+      ? 'linear-gradient(180deg,#ffe566,#c8a930)' : '';
+  },
+
+  initEvents(){
+    $('galleryClose').addEventListener('click',()=>this.close());
+    $('cardClose').addEventListener('click',()=>this.closeCard());
+    $('cardMenu').addEventListener('click',()=>this.closeCard());
+    $('cardFav').addEventListener('click',()=>{
+      const c=this.filtered()[this.currentIdx]; this.toggleFav(c.id);
+    });
+    $('cardPrev').addEventListener('click',()=>{
+      this.openCard(this.currentIdx-1);
+    });
+    $('cardNext').addEventListener('click',()=>{
+      this.openCard(this.currentIdx+1);
+    });
+    $('cardLuma').addEventListener('click',()=>{
+      const c=this.filtered()[this.currentIdx];
+      // Luma: moeda premium — placeholder toast
+      if(typeof game!=='undefined'&&game.ui) game.ui.toast(`✦ Luma gasta em ${c.name}!`);
+    });
+    document.querySelectorAll('.gtab').forEach(b=>{
+      b.addEventListener('click',()=>{
+        this.currentFilter=b.dataset.team;
+        document.querySelectorAll('.gtab').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+        this.render();
+      });
+    });
+    // teclado: Escape fecha, setas navegam
+    document.addEventListener('keydown',e=>{
+      if($('gallery').classList.contains('hidden')&&$('charCard').classList.contains('hidden')) return;
+      if(e.key==='Escape'){ this.closeCard(); this.close(); }
+      if(!$('charCard').classList.contains('hidden')){
+        if(e.key==='ArrowRight') this.openCard(this.currentIdx+1);
+        if(e.key==='ArrowLeft')  this.openCard(this.currentIdx-1);
+      }
+    });
+  }
+};
+
 /* ---- Boot ---- */
 window.addEventListener('load',async ()=>{
   try{
@@ -1712,6 +2132,7 @@ window.addEventListener('load',async ()=>{
     $('loading').innerHTML='<h1 style="color:#ff8080">Erro ao carregar</h1><p style="opacity:.7">'+err.message+'</p>';
   }
   if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  Gallery.initEvents();
 });
 </script>
 </body>
