@@ -23,6 +23,9 @@ namespace VivaParintins.Core
         public int collectiveGar;
         public int collectiveCap;
 
+        [Header("Relíquia equipada")]
+        public Data.RelicData equippedRelic;   // set via ShopUI / EquipRelic()
+
         // ── Nomes das cenas ────────────────────────────────────────────────
         public const string SCENE_INTRO  = "IntroScene";
         public const string SCENE_MAP    = "MapScene";

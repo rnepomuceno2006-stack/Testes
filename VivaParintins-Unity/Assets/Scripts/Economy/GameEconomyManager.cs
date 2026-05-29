@@ -58,6 +58,18 @@ namespace VivaParintins
 
         // ── Moeda Hard: Penas de Ouro (IAP simulado) ─────────────────────
 
+        public bool SpendPenas(int amount)
+        {
+            if (PenasOuro < amount)
+            {
+                ToastManager.Show("Penas de Ouro insuficientes! Visite a loja.");
+                return false;
+            }
+            PenasOuro -= amount;
+            Save();
+            return true;
+        }
+
         public void AddPenasOuro(int amount)
         {
             PenasOuro += amount;

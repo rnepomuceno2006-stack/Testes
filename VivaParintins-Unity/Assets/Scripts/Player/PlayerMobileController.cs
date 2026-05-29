@@ -32,6 +32,9 @@ namespace VivaParintins.Player
         public Animator animator;
 
         // ── Estado interno ───────────────────────────────────────────────
+        [HideInInspector] public bool enableDoubleJump; // ativado pela Sombrinha (BuffSystem)
+        bool _usedDoubleJump;
+
         int _currentLane;
         float _targetX;
         bool _isGrounded;
@@ -181,9 +184,19 @@ namespace VivaParintins.Player
         // ── Ações ────────────────────────────────────────────────────────
         void TryJump()
         {
-            if (!_isGrounded) return;
-            _verticalVelocity = jumpForce;
-            animator?.SetTrigger("Jump");
+            if (_isGrounded)
+            {
+                _verticalVelocity = jumpForce;
+                _usedDoubleJump = false;
+                animator?.SetTrigger("Jump");
+            }
+            else if (enableDoubleJump && !_usedDoubleJump)
+            {
+                // Sombrinha Estrelada: pulo duplo / planar
+                _verticalVelocity = jumpForce * 0.75f;
+                _usedDoubleJump = true;
+                animator?.SetTrigger("Jump");
+            }
         }
 
         void Slide()
