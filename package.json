@@ -1,0 +1,21 @@
+{
+  "name": "viva-parintins",
+  "version": "1.0.0",
+  "description": "Jogo oficial do Festival Folclórico de Parintins 2026",
+  "private": true,
+  "scripts": {
+    "build": "mkdir -p www && cp index.html manifest.webmanifest sw.js www/ && cp -r icons lib www/",
+    "cap:add": "npm run build && npx cap add android",
+    "cap:sync": "npm run build && npx cap sync android",
+    "cap:open": "npm run build && npx cap open android"
+  },
+  "dependencies": {
+    "three": "0.160.0"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/cli": "^6.2.1",
+    "@capacitor/core": "^6.2.1",
+    "playwright": "^1.60.0"
+  }
+}
