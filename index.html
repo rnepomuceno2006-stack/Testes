@@ -127,6 +127,14 @@
   .intro-theme{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.5px;}
   .intro-theme.gar{background:rgba(226,35,26,.18);border:1px solid rgba(226,35,26,.5);color:#ff8080;}
   .intro-theme.cap{background:rgba(21,101,192,.18);border:1px solid rgba(21,101,192,.5);color:#7ab8ff;}
+  /* countdown festival */
+  #festCountdown{display:flex;justify-content:center;gap:10px;margin:6px 0 14px;flex-wrap:wrap;}
+  .countdown-box{display:flex;flex-direction:column;align-items:center;background:rgba(200,169,110,.12);border:1px solid rgba(200,169,110,.4);border-radius:10px;padding:6px 14px;min-width:52px;}
+  .countdown-num{font-family:'Cinzel Decorative',serif;font-size:26px;font-weight:700;color:var(--gold-solid);line-height:1;animation:cntPulse 1s ease-in-out infinite alternate;}
+  .countdown-lbl{font-size:9px;letter-spacing:2px;opacity:.6;margin-top:2px;text-transform:uppercase;}
+  @keyframes cntPulse{from{text-shadow:0 0 8px rgba(200,169,110,.3)}to{text-shadow:0 0 18px rgba(200,169,110,.9)}}
+  .countdown-past{color:#ff8080;font-family:'Cinzel Decorative',serif;font-size:14px;letter-spacing:1px;padding:8px;text-align:center;}
+  .countdown-today{color:#ffe15a;animation:titleGlow 1.5s ease-in-out infinite alternate;}
 
   /* cards dos bois — flip 3D */
   .team-card{perspective:800px;}
@@ -451,6 +459,7 @@
   <div class="panel glass">
     <h1>🐂 BOI IMPACT</h1>
     <p style="font-family:'Cinzel',serif;font-size:13px;color:var(--gold-solid);margin:2px 0 10px;letter-spacing:2px;">LENDAS DE PARINTINS</p>
+    <div id="festCountdown"></div>
     <div id="introThemes">
       <span class="intro-theme gar">❤️ "Portal do Encantamento"</span>
       <span class="intro-theme cap">⭐ "Brinquedo que Canta seu Chão"</span>
@@ -463,13 +472,15 @@
         <div class="big">&#10084;&#65039;</div>
         <h2>Boi Garantido</h2>
         <small>O Boi do Povão — Baixa de São José</small>
-        <small style="display:block;margin-top:5px;color:#ff8080;font-size:11px">⚔️ Fundado em 1913</small>
+        <small style="display:block;margin-top:4px;color:#ff8080;font-size:11px">⚔️ Fundado em 1913 · 🏆 CAMPEÃO 2026</small>
+        <small style="display:block;margin-top:3px;color:#ffe15a;font-size:10px;font-weight:700">✦ Isabelle Nogueira · David Assayag</small>
       </div>
       <div class="team-card cap" data-team="cap">
         <div class="big">&#11088;</div>
         <h2>Boi Caprichoso</h2>
         <small>O Boi de Parintins — A Francesa</small>
-        <small style="display:block;margin-top:5px;color:#7ab8ff;font-size:11px">⚔️ Fundado em 1913</small>
+        <small style="display:block;margin-top:4px;color:#7ab8ff;font-size:11px">⚔️ Fundado em 1913</small>
+        <small style="display:block;margin-top:3px;color:#ffe15a;font-size:10px;font-weight:700">✦ Erick Beltrão · Patrick Araujo</small>
       </div>
     </div>
     <p style="margin-top:14px;font-size:12px;opacity:.5">WASD/setas · mouse · E para interagir · J diário · Esc pausa</p>
@@ -2463,19 +2474,19 @@ const ROSTER = [
      ════════════════════════════════════════════ */
   {
     id:'gar_boi', team:'gar', role:'Boi-Bumbá', name:'Boi Garantido',
-    realName:'A Estrela do Povo', emoji:'🐂', stars:3,
+    realName:'Tripa: Denison Piçanã', emoji:'🐂', stars:3,
     hp:100, mp:60, en:80, hr:90, glow:'rgba(226,35,26,.7)',
-    lore:'O Boi Vermelho da Baixa de São José. Seu coração vermelho pulsa no peito e a galera grita: Garantidada! Fundado em 1913 por Lindolfo Monteverde — símbolo de fé e resistência.'
+    lore:'O Boi Vermelho da Baixa de São José! Fundado em 1913 por Lindolfo Monteverde. Denison Piçanã é a tripa — o coração que pulsa dentro do boi. Garantidada! CAMPEÃO 2026!'
   },
-  { id:'gar_paje',      team:'gar', role:'Pajé',                  name:'Pajé do Garantido',         realName:'Mestre dos Rituais',          emoji:'🪶', stars:3, hp:80,mp:95,en:75,hr:70, glow:'rgba(180,90,10,.9)',  lore:'Xamã supremo do Garantido. Sua pintura de onça e cajado ritual invocam os espíritos da floresta para ressuscitar o boi nas três noites sagradas.' },
-  { id:'gar_cunha',     team:'gar', role:'Cunhã Poranga',          name:'Cunhã Poranga',             realName:'Guerreira Vermelha',          emoji:'💃', stars:3, hp:70,mp:80,en:65,hr:85, glow:'rgba(226,35,26,.6)', lore:'A mulher mais bonita e forte do Garantido. Seus movimentos hipnotizam os jurados. Representa a feminilidade e a bravura da mulher amazônica.' },
-  { id:'gar_rainha',    team:'gar', role:'Rainha do Folclore',     name:'Rainha do Folclore',        realName:'Majestade Vermelha',          emoji:'👑', stars:3, hp:60,mp:90,en:50,hr:95, glow:'rgba(226,35,26,.7)', lore:'Rainha da cultura popular brasileira. Quando canta e dança com suas asas vermelhas e douradas, o Bumbódromo inteiro se transforma em templo de fé.' },
-  { id:'gar_sinha',     team:'gar', role:'Sinhazinha da Fazenda',  name:'Sinhazinha da Fazenda',     realName:'Donzela Vermelha',            emoji:'👸', stars:3, hp:65,mp:75,en:55,hr:90, glow:'rgba(226,35,26,.6)', lore:'Filha do Amo do Boi, testemunha inocente do drama. Seu vestido vermelho e sombrinha bordada representam elegância e devoção no Festival.' },
-  { id:'gar_porta',     team:'gar', role:'Porta Estandarte',       name:'Porta Estandarte',          realName:'Guardiã da Bandeira',         emoji:'🚩', stars:2, hp:75,mp:55,en:70,hr:75, glow:'rgba(226,35,26,.5)', lore:'Carrega o estandarte vermelho do Garantido com força e ginga. Cada giro da bandeira é um grito de amor ao Boi do Povão.' },
-  { id:'gar_levanta',   team:'gar', role:'Levantador de Toadas',   name:'Levantador de Toadas',      realName:'A Voz Vermelha',              emoji:'🎤', stars:3, hp:55,mp:85,en:90,hr:80, glow:'rgba(226,35,26,.6)', lore:'A voz que faz cinquenta mil corações baterem juntos. Quando levanta a toada do Garantido, a Garantidada sacode o Rio Amazonas.' },
-  { id:'gar_apresent',  team:'gar', role:'Apresentador',           name:'Apresentador',              realName:'Voz da Arena Vermelha',       emoji:'🎙️', stars:2, hp:55,mp:70,en:85,hr:75, glow:'rgba(226,35,26,.5)', lore:'O mestre de cerimônias das três noites. Com voz potente grita "Olha o boi!" e conduz o povo numa jornada pela lenda do Garantido.' },
-  { id:'gar_amo',       team:'gar', role:'Amo do Boi',             name:'Amo do Boi',                realName:'O Fazendeiro Repentista',     emoji:'🤠', stars:3, hp:75,mp:80,en:80,hr:80, glow:'rgba(180,120,20,.8)', lore:'Dono da fazenda e repentista incomparável. Improvisa versos desafiando o contrário com poesia afiada. É o coração da lenda do boi bumba.' },
-  { id:'gar_tuxaua',    team:'gar', role:'Tuxaua',                 name:'Tuxaua',                    realName:'Cacique da Floresta',         emoji:'🦚', stars:3, hp:85,mp:70,en:75,hr:80, glow:'rgba(40,140,40,.8)',  lore:'O cacique indígena com fantasias monumentais. Representa a força e a ancestralidade dos povos da Amazônia no espetáculo do Garantido.' },
+  { id:'gar_paje',      team:'gar', role:'Pajé',                  name:'Pajé do Garantido',         realName:'Adriano Paketá',              emoji:'🪶', stars:3, hp:80,mp:95,en:75,hr:70, glow:'rgba(180,90,10,.9)',  lore:'Adriano Paketá — o Pajé Item 12 do Garantido 2026. Pintura de onça, penas e cajado ritual. Sua dança xamânica invoca os espíritos da floresta e ressuscita o boi nas três noites sagradas.' },
+  { id:'gar_cunha',     team:'gar', role:'Cunhã Poranga',          name:'Cunhã Poranga',             realName:'Isabelle Nogueira',           emoji:'💃', stars:3, hp:70,mp:80,en:65,hr:95, glow:'rgba(226,35,26,.8)', lore:'Isabelle Nogueira — ex-BBB24, finalista nacional, filha de Parintins! Voltou à sua raiz como Cunhã-Poranga do Garantido 2026. "Cunhã-Poranga" = Mulher Bonita em Tupi. A arena explodiu!' },
+  { id:'gar_rainha',    team:'gar', role:'Rainha do Folclore',     name:'Rainha do Folclore',        realName:'Lívia Cristina',              emoji:'👑', stars:3, hp:60,mp:90,en:50,hr:95, glow:'rgba(226,35,26,.7)', lore:'Lívia Cristina — Rainha do Folclore do Garantido 2026. Com asas vermelhas e douradas, seu voo sobre o tablado fez 35 mil pessoas explodirem. Majestade encarnada da cultura amazônica.' },
+  { id:'gar_sinha',     team:'gar', role:'Sinhazinha da Fazenda',  name:'Sinhazinha da Fazenda',     realName:'Raíra Lins',                  emoji:'👸', stars:3, hp:65,mp:75,en:55,hr:90, glow:'rgba(226,35,26,.6)', lore:'Raíra Lins — debutante como Sinhazinha da Fazenda do Garantido 2026. Filha do Amo do Boi, seu vestido vermelho e sombrinha bordada encantaram os jurados na estreia no Sambódromo de Manaus.' },
+  { id:'gar_porta',     team:'gar', role:'Porta Estandarte',       name:'Porta Estandarte',          realName:'Jeveny Mendonça',             emoji:'🚩', stars:2, hp:75,mp:55,en:70,hr:75, glow:'rgba(226,35,26,.5)', lore:'Jeveny Mendonça — Porta-Estandarte do Garantido 2026. Carrega a bandeira vermelha com ginga e garra. Cada giro do estandarte é um grito de amor ao Boi do Povão. Guardiã da chama vermelha!' },
+  { id:'gar_levanta',   team:'gar', role:'Levantador de Toadas',   name:'Levantador de Toadas',      realName:'David Assayag',               emoji:'🎤', stars:3, hp:55,mp:85,en:90,hr:80, glow:'rgba(226,35,26,.6)', lore:'David Assayag — Levantador de Toadas do Garantido 2026. Voz que fez cinquenta mil corações baterem juntos no "Portal do Encantamento". Quando canta, a Garantidada sacode o Rio Amazonas!' },
+  { id:'gar_apresent',  team:'gar', role:'Apresentador',           name:'Apresentador',              realName:'Israel Paulain',              emoji:'🎙️', stars:2, hp:55,mp:70,en:85,hr:75, glow:'rgba(226,35,26,.5)', lore:'Israel Paulain — Apresentador do Garantido 2026. Mestre de cerimônias das três noites épicas. Com voz que ecoa no Bumbódromo: "OLHA O BOI!" — convida o povo a entrar na lenda.' },
+  { id:'gar_amo',       team:'gar', role:'Amo do Boi',             name:'Amo do Boi',                realName:'João Paulo Faria',            emoji:'🤠', stars:3, hp:75,mp:80,en:80,hr:80, glow:'rgba(180,120,20,.8)', lore:'João Paulo Faria — Amo do Boi do Garantido 2026. Dono da fazenda e repentista incomparável. Improvisa versos desafiando o contrário com poesia afiada. É o coração da lenda do Garantido.' },
+  { id:'gar_tuxaua',    team:'gar', role:'Tuxaua',                 name:'Tuxaua',                    realName:'Cacique Vermelho',            emoji:'🦚', stars:3, hp:85,mp:70,en:75,hr:80, glow:'rgba(40,140,40,.8)',  lore:'O Tuxaua do Garantido 2026 — cacique indígena com fantasias monumentais e cocar imponente. Representa a ancestralidade e a força dos povos da floresta no espetáculo campeão.' },
   { id:'gar_catirina',  team:'gar', role:'Mãe Catirina',           name:'Mãe Catirina',              realName:'A Grávida da Lenda',          emoji:'🤰', stars:2, hp:60,mp:65,en:50,hr:85, glow:'rgba(200,120,30,.7)', lore:'Grávida que deseja a língua do boi, dando início ao drama sagrado. Sem ela, não há lenda, não há festival, não há ressurreição.' },
   { id:'gar_francisco', team:'gar', role:'Pai Francisco',          name:'Pai Francisco',             realName:'O Caçador Arrependido',       emoji:'🏹', stars:2, hp:80,mp:50,en:85,hr:70, glow:'rgba(100,60,20,.8)',  lore:'Mata o boi para satisfazer o desejo da esposa grávida. Pego pelo Amo, enfrenta a morte — até o Pajé ressuscitar o boi e salvá-los.' },
   { id:'gar_batucada',  team:'gar', role:'Batucada',               name:'Batucada do Garantido',     realName:'O Coração Vermelho da Arena', emoji:'🥁', stars:3, hp:90,mp:60,en:100,hr:85,glow:'rgba(226,35,26,.7)', lore:'A Batucada é a alma percussiva do Garantido. Seu ritmo frenético faz a torcida explodir e os jurados sentirem o pulso do povo vermelho.' },
@@ -3278,6 +3289,36 @@ const VFX = {
   }
 };
 
+/* ---- Countdown Festival de Parintins (26–28 Jun 2026) ---- */
+function initCountdown(){
+  const el=$('festCountdown'); if(!el) return;
+  // Festival: noite 1 = 26 Jun 2026 (UTC-4 Manaus)
+  const festStart=new Date('2026-06-26T20:00:00-04:00');
+  const festEnd  =new Date('2026-06-28T23:59:00-04:00');
+  function tick(){
+    const now=new Date();
+    if(now>festEnd){
+      el.innerHTML='<div class="countdown-past">🏆 Festival 2026 concluído! Garantidada Campeã!</div>';
+      return;
+    }
+    if(now>=festStart){
+      el.innerHTML='<div class="countdown-today countdown-past">🎪 O FESTIVAL ESTÁ ACONTECENDO AGORA! 🐂🔥</div>';
+      return;
+    }
+    const diff=festStart-now;
+    const d=Math.floor(diff/864e5);
+    const h=Math.floor((diff%864e5)/36e5);
+    const m=Math.floor((diff%36e5)/6e4);
+    const s=Math.floor((diff%6e4)/1e3);
+    el.innerHTML=
+      `<div class="countdown-box"><span class="countdown-num">${String(d).padStart(2,'0')}</span><span class="countdown-lbl">Dias</span></div>`+
+      `<div class="countdown-box"><span class="countdown-num">${String(h).padStart(2,'0')}</span><span class="countdown-lbl">Horas</span></div>`+
+      `<div class="countdown-box"><span class="countdown-num">${String(m).padStart(2,'0')}</span><span class="countdown-lbl">Min</span></div>`+
+      `<div class="countdown-box"><span class="countdown-num">${String(s).padStart(2,'0')}</span><span class="countdown-lbl">Seg</span></div>`;
+  }
+  tick(); setInterval(tick,1000);
+}
+
 /* ---- Boot ---- */
 window.addEventListener('load',async ()=>{
   try{
@@ -3291,6 +3332,7 @@ window.addEventListener('load',async ()=>{
     game._osm=data; game._mapMode=mode;
     $('loading').classList.add('hidden');
     $('intro').classList.remove('hidden');
+    initCountdown();
     VFX.initStars();
     setTimeout(()=>VFX.spawnIntroParticles(), 400);
     setInterval(()=>VFX.spawnIntroParticles(), 5000);
