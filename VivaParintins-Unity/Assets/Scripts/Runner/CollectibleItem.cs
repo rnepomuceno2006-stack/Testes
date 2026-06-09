@@ -1,72 +1,72 @@
-// Coloque em cada ❤️ (Garantido) ou ⭐ (Caprichoso) no cenário.
-// Requer: SpriteRenderer, Collider2D (Is Trigger = true), tag "Collectible"
-
 using System.Collections;
 using UnityEngine;
 using VivaParintins.Core;
+using VivaParintins.Data;
 
 namespace VivaParintins.Runner
 {
     [RequireComponent(typeof(Collider2D))]
+    [RequireComponent(typeof(SpriteRenderer))]
     public class CollectibleItem : MonoBehaviour
     {
         [Header("Sprites")]
-        public Sprite heartSprite;   // ❤️ Garantido
-        public Sprite starSprite;    // ⭐ Caprichoso
+        public Sprite heartSprite;
+        public Sprite starSprite;
 
-        [Header("Animação idle")]
+        [Header("Idle Animation")]
         public float bobAmplitude = 0.18f;
-        public float bobSpeed     = 2.2f;
-        public float rotateSpeed  = 45f;   // graus/s
+        public float bobSpeed = 2.2f;
+        public float rotateSpeed = 45f;
 
-        SpriteRenderer _sr;
-        Vector3        _originPos;
-        float          _phase;
-        bool           _collected;
+        private SpriteRenderer sr;
+        private Collider2D col;
+        private Vector3 originPos;
+        private float phase;
+        private bool collected;
 
         void Awake()
         {
-            _sr = GetComponent<SpriteRenderer>();
-            _originPos = transform.position;
-            _phase = Random.Range(0f, Mathf.PI * 2f);
+            sr = GetComponent<SpriteRenderer>();
+            col = GetComponent<Collider2D>();
+            col.isTrigger = true;
+            originPos = transform.position;
+            phase = Random.Range(0f, Mathf.PI * 2f);
 
-            // Aplica sprite conforme time
-            if (_sr)
-                _sr.sprite = GameManager.Instance?.selectedTeam == Team.Garantido
-                    ? heartSprite : starSprite;
+            bool isGarantido = GameManager.Instance != null && GameManager.Instance.selectedTeam == Team.Garantido;
+            if (sr != null)
+                sr.sprite = isGarantido ? heartSprite : starSprite;
         }
 
         void Update()
         {
-            if (_collected) return;
-
-            // Bob vertical
-            float y = _originPos.y + Mathf.Sin(Time.time * bobSpeed + _phase) * bobAmplitude;
-            transform.position = new Vector3(_originPos.x, y, _originPos.z);
-
-            // Rotação suave
+            if (collected) return;
+            float y = originPos.y + Mathf.Sin(Time.time * bobSpeed + phase) * bobAmplitude;
+            transform.position = new Vector3(originPos.x, y, originPos.z);
             transform.Rotate(Vector3.forward, rotateSpeed * Time.deltaTime);
         }
 
         void OnTriggerEnter2D(Collider2D other)
         {
-            if (_collected || !other.CompareTag("Player")) return;
-            _collected = true;
+            if (collected || !other.CompareTag("Player")) return;
+            collected = true;
+            col.enabled = false;
             RunnerLevelManager.Instance?.OnCollect(transform.position);
             StartCoroutine(CollectAnimation());
         }
 
         IEnumerator CollectAnimation()
         {
-            float t = 0f;
+            float elapsed = 0f;
+            float duration = 0.2f;
             Vector3 startScale = transform.localScale;
+            Vector3 endScale = startScale * 1.6f;
 
-            while (t < 0.2f)
+            while (elapsed < duration)
             {
-                t += Time.deltaTime;
-                float p = t / 0.2f;
-                transform.localScale = Vector3.Lerp(startScale, startScale * 1.6f, p);
-                if (_sr) _sr.color = new Color(1f, 1f, 1f, 1f - p);
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration;
+                transform.localScale = Vector3.Lerp(startScale, endScale, t);
+                if (sr != null) sr.color = new Color(1f, 1f, 1f, 1f - t);
                 yield return null;
             }
             Destroy(gameObject);
