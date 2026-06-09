@@ -41,6 +41,8 @@ namespace VivaParintins.Runner
         [Header("References")]
         public LandmarkReveal landmarkReveal;
         public RunnerCameraController cameraController;
+        [Tooltip("Só na fase do Bumbódromo: os dois bois na arena reagem à coleta.")]
+        public BumbodromoBois bumbodromoBois;
 
         private AudioSource audioSource;
         private bool isGarantido;
@@ -92,6 +94,9 @@ namespace VivaParintins.Runner
             PlaySFX(collectSFX);
             SpawnCollectVFX(position);
             UpdateHUD();
+
+            // No Bumbódromo, o boi do time pula de alegria a cada coleta
+            if (bumbodromoBois != null) bumbodromoBois.OnPlayerScored();
         }
 
         public void OnPlayerHit()
